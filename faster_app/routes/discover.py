@@ -8,7 +8,7 @@ class RoutesDiscover(BaseDiscover):
     TARGETS = [
         {
             "directory": "apps",
-            "filename": "routes.py",
+            "filename": None,
             "skip_dirs": ["__pycache__"],
             "skip_files": [],
         },
