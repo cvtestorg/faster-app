@@ -115,6 +115,9 @@ plugins:
             filters:
               - "!^_" # 排除私有成员
 
+extra_css:
+  - stylesheets/extra.css
+
 extra:
   social:
     - icon: fontawesome/brands/github
@@ -130,38 +133,21 @@ extra:
 nav:
   - 首页: index.md
   - 快速开始:
+      - 概览: getting-started/index.md
       - 安装: getting-started/installation.md
       - 快速入门: getting-started/quickstart.md
       - 项目结构: getting-started/structure.md
-  - 核心功能:
-      - 自动发现机制: features/auto-discovery.md
-      - 模型基类: features/models.md
-      - 路由管理: features/routes.md
-      - CRUD Router: features/crud-router.md
-      - 命令行工具: features/cli.md
-      - 中间件: features/middleware.md
-      - 配置管理: features/settings.md
   - 命令行参考:
       - App 命令: cli/app.md
       - DB 命令: cli/db.md
       - Server 命令: cli/server.md
       - 自定义命令: cli/custom.md
-  - API 参考:
-      - 模块概览: api/overview.md
-      - 应用核心: api/app.md
-      - 模型基类: api/models.md
-      - 路由工具: api/routes.md
-      - 工具函数: api/utils.md
-  - 最佳实践:
-      - 项目组织: best-practices/organization.md
-      - 数据库设计: best-practices/database.md
-      - API 设计: best-practices/api-design.md
-      - 部署指南: best-practices/deployment.md
-  - 贡献指南:
-      - 如何贡献: contributing/how-to-contribute.md
-      - 开发环境: contributing/development.md
-      - 代码规范: contributing/code-style.md
-  - Changelog: about/changelog.md
+      - 子命令:
+          - 模块概览: api/overview.md
+          - 应用核心: api/app.md
+          - 模型基类: api/models.md
+          - 路由工具: api/routes.md
+          - 工具函数: api/utils.md
   - 许可证: about/license.md
 
-copyright: Copyright &copy; 2024 peizhenfei
+copyright: Copyright &copy; 2025 peizhenfei
