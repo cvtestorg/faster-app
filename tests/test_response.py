@@ -28,14 +28,29 @@ def test_success_response_with_custom_code():
 
 
 def test_error_response():
-    """Test error API response creation."""
+    """Test error API response creation with default HTTP status."""
+    # Note: code=400 is business error code, but HTTP status defaults to 500
     response = ApiResponse.error(message="Error occurred", code=400)
     
+    # Default HTTP status code should be INTERNAL_SERVER_ERROR
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     body = response.body.decode()
     assert "success" in body
     assert "false" in body.lower()
     assert "Error occurred" in body
+
+
+def test_error_response_with_custom_status():
+    """Test error response with custom HTTP status code."""
+    response = ApiResponse.error(
+        message="Bad request",
+        code=400,
+        status_code=HTTPStatus.BAD_REQUEST
+    )
+    
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    body = response.body.decode()
+    assert "Bad request" in body
 
 
 def test_error_response_with_detail():
