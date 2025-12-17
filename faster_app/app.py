@@ -1,7 +1,11 @@
 """
-Faster APP 应用实例模块
+Faster APP application instance module.
+
+Creates and configures the FastAPI application with automatic discovery
+of routes, middleware, and database configuration.
 """
 
+from typing import Optional
 from fastapi import FastAPI
 from starlette.staticfiles import StaticFiles
 from faster_app.routes.discover import RoutesDiscover
@@ -13,7 +17,20 @@ from faster_app.utils.db import lifespan
 
 
 def create_app() -> FastAPI:
-    """创建 FastAPI 应用实例"""
+    """
+    Create and configure FastAPI application instance.
+    
+    Automatically discovers and registers:
+    - Routes from apps/*/routes.py files
+    - Middleware from middleware/*.py files
+    - Static file serving from /statics directory
+    
+    Returns:
+        Configured FastAPI application instance
+        
+    Note:
+        Uses singleton pattern via get_app() to ensure single instance
+    """
     app = FastAPI(
         title=configs.PROJECT_NAME,
         version=configs.VERSION,
@@ -46,7 +63,15 @@ def create_app() -> FastAPI:
 
 
 def get_app() -> FastAPI:
-    """获取应用实例(单例模式)"""
+    """
+    Get application instance using singleton pattern.
+    
+    Creates the app on first call and returns cached instance on
+    subsequent calls.
+    
+    Returns:
+        FastAPI application instance
+    """
     if not hasattr(get_app, "_app"):
         get_app._app = create_app()
     return get_app._app

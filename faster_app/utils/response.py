@@ -1,11 +1,22 @@
+"""
+Standardized API response utility.
+
+This module provides a consistent API response format for all endpoints,
+including success, error, and paginated responses.
+"""
+
 from http import HTTPStatus
-from typing import Any, Optional
+from typing import Any, Optional, List
 from fastapi.responses import JSONResponse
 from datetime import datetime
 
 
 class ApiResponse:
-    """统一的API响应格式类"""
+    """Utility class for creating standardized API responses.
+    
+    Provides static methods to create consistent JSON responses for
+    success, error, and paginated data scenarios.
+    """
 
     @staticmethod
     def success(
@@ -15,13 +26,19 @@ class ApiResponse:
         status_code: int = HTTPStatus.OK,
     ) -> JSONResponse:
         """
-        成功响应格式
+        Create a successful API response.
 
         Args:
-            data: 返回的数据, 可以是任意类型
-            message: 成功消息
-            code: 业务状态码
-            status_code: HTTP状态码
+            data: The response data (can be any JSON-serializable type)
+            message: Success message (default: "操作成功")
+            code: Business status code (default: 200)
+            status_code: HTTP status code (default: 200 OK)
+            
+        Returns:
+            JSONResponse with standardized success format
+            
+        Example:
+            >>> ApiResponse.success(data={"user_id": 123}, message="User created")
         """
         response_data = {
             "success": True,
@@ -41,14 +58,27 @@ class ApiResponse:
         data: Any = None,
     ) -> JSONResponse:
         """
-        错误响应格式
+        Create an error API response.
 
         Args:
-            message: 错误消息
-            code: 业务错误码
-            status_code: HTTP状态码
-            error_detail: 详细错误信息
-            data: 额外的错误数据
+            message: Error message (default: "操作失败")
+            code: Business error code (default: 500)
+            status_code: HTTP status code (default: 500 Internal Server Error)
+            error_detail: Detailed error information (optional)
+            data: Additional error data (optional)
+            
+        Returns:
+            JSONResponse with standardized error format
+            
+        Note:
+            Avoid including sensitive information in error_detail in production
+            
+        Example:
+            >>> ApiResponse.error(
+            ...     message="Validation failed",
+            ...     code=400,
+            ...     status_code=HTTPStatus.BAD_REQUEST
+            ... )
         """
         response_data = {
             "success": False,
@@ -66,21 +96,33 @@ class ApiResponse:
 
     @staticmethod
     def paginated(
-        data: list,
+        data: List[Any],
         total: int,
         page: int = 1,
         page_size: int = 10,
         message: str = "查询成功",
     ) -> JSONResponse:
         """
-        分页响应格式
+        Create a paginated API response.
 
         Args:
-            data: 分页数据列表
-            total: 总记录数
-            page: 当前页码
-            page_size: 每页大小
-            message: 响应消息
+            data: List of items for the current page
+            total: Total number of items across all pages
+            page: Current page number (1-indexed, default: 1)
+            page_size: Number of items per page (default: 10)
+            message: Response message (default: "查询成功")
+            
+        Returns:
+            JSONResponse with standardized pagination format including
+            pagination metadata (total, page, page_size, total_pages, has_next, has_prev)
+            
+        Example:
+            >>> ApiResponse.paginated(
+            ...     data=[{"id": 1}, {"id": 2}],
+            ...     total=50,
+            ...     page=1,
+            ...     page_size=10
+            ... )
         """
         pagination_info = {
             "total": total,

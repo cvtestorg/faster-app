@@ -1,6 +1,9 @@
 from fastapi import APIRouter
 from faster_app.utils.discover import BaseDiscover
 from faster_app.utils import BASE_DIR
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class RoutesDiscover(BaseDiscover):
@@ -55,6 +58,6 @@ class RoutesDiscover(BaseDiscover):
 
         except Exception as e:
             # 静默跳过导入失败的模块, 避免阻断整个发现过程
-            print(f"Warning: Failed to import routes from {module_name}: {e}")
+            logger.warning(f"Failed to import routes from {module_name}: {e}")
 
         return instances

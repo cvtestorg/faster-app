@@ -1,11 +1,24 @@
 """
-Faster APP - 一个轻量级的 Python Web 框架
+Faster APP - A lightweight Python web framework built on FastAPI.
 
-提供了以下核心功能:
-- 自动发现和加载模块 (BaseDiscover)
-- 数据库模型基类 (UUIDModel, DateTimeModel, EnumModel)
-- 命令行工具基类 (BaseCommand)
-- 路由管理 (ApiResponse)
+Faster APP provides Django-style project structure and conventions for FastAPI,
+including automatic discovery of routes, models, commands, and middleware.
+
+Core Features:
+    - Auto-discovery of routes, models, commands, and middleware
+    - Base model classes (UUIDModel, DateTimeModel, StatusModel, ScopeModel)
+    - Django-style command-line interface
+    - Standardized API responses
+    - Convention over configuration approach
+
+Example:
+    >>> from faster_app import UUIDModel, DateTimeModel
+    >>> from faster_app import ApiResponse
+    >>> from faster_app import BaseCommand
+
+Author: peizhenfei
+Email: peizhenfei@hotmail.com
+License: MIT
 """
 
 __version__ = "0.0.43"
@@ -32,6 +45,10 @@ from faster_app.routes.discover import RoutesDiscover
 from faster_app.settings.builtins.settings import DefaultSettings
 
 __all__ = [
+    # Version info
+    "__version__",
+    "__author__",
+    "__email__",
     # 基础类
     "BaseDiscover",
     "BaseCommand",
