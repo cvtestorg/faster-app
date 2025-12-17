@@ -36,9 +36,16 @@ jobs:
       run: |
         twine check dist/*
 
+    - name: Verify PyPI token
+      run: |
+        if [ -z "${{ secrets.PYPI_TOKEN }}" ]; then
+          echo "Error: PYPI_TOKEN secret is not set"
+          exit 1
+        fi
+
     - name: Publish to PyPI
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
       run: |
-        twine upload dist/*
+        twine upload --non-interactive dist/*
