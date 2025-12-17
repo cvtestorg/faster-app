@@ -185,6 +185,55 @@ faster_app/
 └── utils/          # Utility functions
 ```
 
+## Release Process
+
+### Publishing to PyPI
+
+The project uses GitHub Actions to automatically publish releases to PyPI when a new version is released.
+
+#### Setup (Maintainers Only)
+
+1. **Generate a PyPI API token:**
+   - Go to [PyPI Account Settings](https://pypi.org/manage/account/)
+   - Scroll to "API tokens" and click "Add API token"
+   - Give it a descriptive name (e.g., "faster-app GitHub Actions")
+   - Set the scope to "Project: faster_app"
+   - Copy the generated token (starts with `pypi-`)
+
+2. **Add the token to GitHub Secrets:**
+   - Go to the repository settings
+   - Navigate to "Secrets and variables" → "Actions"
+   - Click "New repository secret"
+   - Name: `PYPI_TOKEN`
+   - Value: Paste the PyPI token
+   - Click "Add secret"
+
+#### Creating a Release
+
+1. **Update the version in `pyproject.toml`:**
+   ```toml
+   version = "0.0.44"  # Increment as needed
+   ```
+
+2. **Commit and push the version change:**
+   ```bash
+   git add pyproject.toml
+   git commit -m "chore: bump version to 0.0.44"
+   git push
+   ```
+
+3. **Create a release on GitHub:**
+   - Go to the repository's "Releases" page
+   - Click "Draft a new release"
+   - Create a new tag (e.g., `v0.0.44`)
+   - Enter release title and description
+   - Click "Publish release"
+
+4. **Automatic deployment:**
+   - The GitHub Action will automatically trigger
+   - It will build the package and upload it to PyPI
+   - Monitor the action's progress in the "Actions" tab
+
 ## Getting Help
 
 - 📚 [Documentation](https://mautops.github.io/faster-app/)
