@@ -1,12 +1,22 @@
 """
-统一返回格式
+API response format definitions.
+
+This module provides standardized response formats for FastAPI endpoints.
 """
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ApiResponse(BaseModel):
-    """统一返回格式"""
+    """Standard API response format for successful operations.
+    
+    This is a simple response model that can be used for basic
+    API responses.
+    
+    Attributes:
+        message: Human-readable message describing the response
+        data: Response payload as a dictionary
+    """
 
-    message: str
-    data: dict
+    message: str = Field(..., description="Response message")
+    data: dict = Field(..., description="Response data payload")

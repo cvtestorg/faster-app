@@ -1,19 +1,31 @@
 """
-命令基类, 使用 fire 库管理子命令
+Base command class for CLI commands using Fire.
+
+This module provides a base class for all CLI commands with automatic
+PYTHONPATH configuration and command name generation.
 """
 
 import os
 import sys
+from typing import List, Optional
 
 
-class BaseCommand(object):
-    """命令基类"""
+class BaseCommand:
+    """Base class for all CLI commands.
+    
+    Provides automatic PYTHONPATH configuration and command name generation
+    from class names by removing common prefixes and suffixes.
+    
+    Attributes:
+        _DEFAULT_PREFIXES: Default list of prefixes to strip from command names
+        _DEFAULT_SUFFIXES: Default list of suffixes to strip from command names
+    """
 
     # 默认要去掉的前缀列表(私有属性, 避免被 Fire 暴露)
-    _DEFAULT_PREFIXES = []
+    _DEFAULT_PREFIXES: List[str] = []
 
     # 默认要去掉的后缀列表(私有属性, 避免被 Fire 暴露)
-    _DEFAULT_SUFFIXES = [
+    _DEFAULT_SUFFIXES: List[str] = [
         "Command",
         "Commands",
         "Handler",
@@ -24,19 +36,28 @@ class BaseCommand(object):
 
     class Meta:
         """
-        PREFIXES = []
-        SUFFIXES = []
+        Metaclass configuration for command name generation.
+        
+        Attributes:
+            PREFIXES: Additional prefixes to remove from command names
+            SUFFIXES: Additional suffixes to remove from command names
         """
 
-        PREFIXES = []
-        SUFFIXES = []
+        PREFIXES: List[str] = []
+        SUFFIXES: List[str] = []
 
-    def __init__(self):
-        """初始化命令基类, 自动配置 PYTHONPATH"""
+    def __init__(self) -> None:
+        """Initialize the command base class and configure PYTHONPATH."""
         self._setup_python_path()
 
-    def _setup_python_path(self):
-        """配置 Python 路径, 确保可以导入项目模块"""
+    def _setup_python_path(self) -> None:
+        """
+        Configure Python path to ensure project modules can be imported.
+        
+        Adds the current working directory to sys.path and PYTHONPATH
+        environment variable to ensure both the current process and
+        subprocesses can import project modules.
+        """
         # 将当前工作目录添加到 Python 路径, 确保可以导入项目模块
         current_dir = os.getcwd()
         if current_dir not in sys.path:
@@ -51,18 +72,30 @@ class BaseCommand(object):
 
     @classmethod
     def _get_command_name(
-        cls, class_name: str = None, prefixes: list = None, suffixes: list = None
+        cls,
+        class_name: Optional[str] = None,
+        prefixes: Optional[List[str]] = None,
+        suffixes: Optional[List[str]] = None,
     ) -> str:
         """
-        自动去除类名中的前缀和后缀, 生成简洁的命令名
+        Generate a clean command name from a class name.
+        
+        Automatically removes common prefixes and suffixes to create
+        a concise command name.
 
         Args:
-            class_name: 类名, 如果不提供则使用当前类的名称
-            prefixes: 要去除的前缀列表, 如果不提供则使用 _DEFAULT_PREFIXES 和 Meta.PREFIXES
-            suffixes: 要去除的后缀列表, 如果不提供则使用 _DEFAULT_SUFFIXES 和 Meta.SUFFIXES
+            class_name: The class name to process (defaults to current class)
+            prefixes: List of prefixes to remove (defaults to _DEFAULT_PREFIXES + Meta.PREFIXES)
+            suffixes: List of suffixes to remove (defaults to _DEFAULT_SUFFIXES + Meta.SUFFIXES)
 
         Returns:
-            去除前缀和后缀后的命令名(小写)
+            Lowercase command name with prefixes and suffixes removed
+            
+        Example:
+            >>> ServerCommand._get_command_name()
+            'server'
+            >>> AppOperations._get_command_name()
+            'app'
         """
         if class_name is None:
             class_name = cls.__name__

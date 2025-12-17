@@ -1,5 +1,8 @@
 """
-Faster APP 主启动模块
+Faster APP main startup module.
+
+Entry point for running the FastAPI application with Uvicorn server.
+Supports both development mode (with hot reload) and production mode.
 """
 
 import uvicorn
@@ -9,8 +12,23 @@ from faster_app.settings.logging import log_config
 from fastapi_pagination import add_pagination
 
 
-def main():
-    """主启动方法"""
+def main() -> None:
+    """
+    Main startup method for Faster APP.
+    
+    Initializes the FastAPI application, configures pagination, and
+    starts the Uvicorn server. Behavior changes based on DEBUG setting:
+    
+    - DEBUG=True: Enables hot reload for development
+    - DEBUG=False: Runs in production mode without reload
+    
+    Note:
+        Server configuration (host, port) is read from configs.
+        
+    Example:
+        Run from command line: python -m faster_app.main
+        Or use CLI: faster server start
+    """
     # 创建应用实例
     app = get_app()
 

@@ -1,11 +1,28 @@
+"""
+Faster-App CLI entry point.
+
+Main command-line interface for the Faster-App framework. Automatically
+discovers and registers all CLI commands from the application.
+"""
+
 import os
 import sys
+from typing import Dict, Any
 import fire
 from faster_app.commands.discover import CommandDiscover
 
 
-def main():
-    """Faster-App 命令行工具主入口"""
+def main() -> None:
+    """
+    Faster-App command-line tool main entry point.
+    
+    Configures Python path, discovers available commands, and launches
+    the Fire CLI interface.
+    
+    Note:
+        Commands are automatically discovered from apps/*/commands.py files
+        and registered with Fire for CLI access.
+    """
     # 将当前工作目录添加到 Python 路径, 确保可以导入项目模块
     current_dir = os.getcwd()
     if current_dir not in sys.path:
@@ -19,7 +36,7 @@ def main():
         )
 
     # 收集命令
-    commands = CommandDiscover().collect()
+    commands: Dict[str, Any] = CommandDiscover().collect()
     fire.Fire(commands)
 
 

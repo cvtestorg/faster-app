@@ -1,17 +1,33 @@
 import os
 import importlib.util
 import inspect
-from typing import Dict, List
+import logging
+from typing import Dict, List, Optional, Type, Any
+
+logger = logging.getLogger(__name__)
 
 
-class BaseDiscover(object):
-    INSTANCE_TYPE = None
-    TARGETS: List[Dict[str, str]] = []
+class BaseDiscover:
+    """Base class for auto-discovery of instances in the application.
+    
+    This class provides the core functionality for scanning directories and files,
+    importing modules, and extracting instances of a specific type.
+    
+    Attributes:
+        INSTANCE_TYPE: The type of instances to discover and extract
+        TARGETS: List of directory/file configurations to scan
+    """
+    
+    INSTANCE_TYPE: Optional[Type] = None
+    TARGETS: List[Dict[str, Any]] = []
 
-    def discover(self) -> List[type]:
+    def discover(self) -> List[Any]:
         """
-        自动扫描 TARGETS 中的目录和文件,
-        导出所有的实例
+        Automatically scan directories and files defined in TARGETS,
+        and extract all instances of INSTANCE_TYPE.
+        
+        Returns:
+            List of discovered instances
         """
         instances = []
 
@@ -30,14 +46,26 @@ class BaseDiscover(object):
     def walk(
         self,
         directory: str,
-        filename: str = None,
-        skip_files: List[str] = [],
-        skip_dirs: List[str] = [],
+        filename: Optional[str] = None,
+        skip_files: Optional[List[str]] = None,
+        skip_dirs: Optional[List[str]] = None,
     ) -> List[str]:
         """
-        遍历目录下的所有文件
+        Recursively walk through a directory and collect Python file paths.
+        
+        Args:
+            directory: The directory path to walk through
+            filename: Optional specific filename to look for
+            skip_files: List of filenames to skip (default: empty list)
+            skip_dirs: List of directory names to skip (default: empty list)
+            
+        Returns:
+            List of absolute paths to Python files
         """
+        skip_files = skip_files or []
+        skip_dirs = skip_dirs or []
         results = []
+        
         if not os.path.exists(directory) or not os.path.isdir(directory):
             return results
 
@@ -57,21 +85,24 @@ class BaseDiscover(object):
     def scan(
         self,
         directory: str,
-        filename: str = None,
-        skip_files: List[str] = [],
-        skip_dirs: List[str] = [],
-    ) -> List[type]:
+        filename: Optional[str] = None,
+        skip_files: Optional[List[str]] = None,
+        skip_dirs: Optional[List[str]] = None,
+    ) -> List[Any]:
         """
-        通用扫描方法
+        Generic scanning method to discover instances in Python files.
 
         Args:
-            directory: 要扫描的目录路径
-            filename: 要扫描的具体文件名, 如果为 None 则扫描目录下所有 .py 文件
-            skip_files: 要跳过的文件列表
-            skip_dirs: 要跳过的目录列表
+            directory: The directory path to scan
+            filename: Optional specific filename to scan (None scans all .py files)
+            skip_files: List of filenames to skip
+            skip_dirs: List of directory names to skip
+            
         Returns:
-            扫描到的所有实例列表
+            List of discovered instances
         """
+        skip_files = skip_files or []
+        skip_dirs = skip_dirs or []
         instances = []
 
         files = self.walk(directory, filename, skip_files, skip_dirs)
@@ -85,16 +116,16 @@ class BaseDiscover(object):
 
     def import_and_extract_instances(
         self, file_path: str, module_name: str
-    ) -> List[type]:
+    ) -> List[Any]:
         """
-        导入模块并提取实例
+        Import a module and extract instances of INSTANCE_TYPE.
 
         Args:
-            file_path: 文件路径
-            module_name: 模块名称
+            file_path: Absolute path to the Python file
+            module_name: Name to use for the module
 
         Returns:
-            提取到的实例列表
+            List of extracted instances
         """
         instances = []
 
@@ -109,7 +140,6 @@ class BaseDiscover(object):
 
             # 查找模块中所有的类并实例化
             for _, obj in inspect.getmembers(module):
-                # print(obj)
                 if (
                     inspect.isclass(obj)
                     and issubclass(obj, self.INSTANCE_TYPE)
@@ -121,10 +151,10 @@ class BaseDiscover(object):
                         instance = obj()
                         instances.append(instance)
                     except Exception as e:
-                        print(f"Warning: Failed to instantiate {obj.__name__}: {e}")
+                        logger.warning(f"Failed to instantiate {obj.__name__}: {e}")
 
         except Exception as e:
             # 静默跳过导入失败的模块, 避免阻断整个发现过程
-            print(f"Warning: Failed to import instances from {module_name}: {e}")
+            logger.warning(f"Failed to import instances from {module_name}: {e}")
 
         return instances
