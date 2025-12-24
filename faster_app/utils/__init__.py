@@ -15,9 +15,9 @@ def _import_decorators():
 
 # 延迟导入 pagination, 避免循环导入
 def _import_pagination():
-    from .pagination import Page, Params, CustomParams, paginate, apaginate
+    from .pagination import CustomParams, Page, Params, apaginate, paginate
 
-    return {"Page": Page, "Params": Params, "CustomParams": CustomParams, 
+    return {"Page": Page, "Params": Params, "CustomParams": CustomParams,
             "paginate": paginate, "apaginate": apaginate}
 
 
