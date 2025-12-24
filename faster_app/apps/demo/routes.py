@@ -7,7 +7,7 @@ Demo 路由 - 展示三种 CRUD 开发模式
 """
 
 from datetime import datetime
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Depends
 from faster_app.apps.demo.schemas import (
     BackgroundTaskRequest,
     DemoCreate,
@@ -19,6 +19,7 @@ from faster_app.settings import logger
 from faster_app.apps.demo.models import DemoModel
 from faster_app.utils.crud import CRUDRouter, CRUDBase
 from faster_app.utils.response import ApiResponse
+from faster_app.utils.pagination import Page, Params, paginate
 from http import HTTPStatus
 
 
@@ -227,4 +228,73 @@ async def create_background_task(
             "submitted_at": datetime.now().isoformat(),
         },
         message="后台任务已启动",
+    )
+
+
+# ==================== 分页功能演示 ====================
+# 展示如何使用统一的分页功能
+
+pagination_demo_router = APIRouter(
+    prefix="/pagination-demo", 
+    tags=["Demo - 分页功能演示"]
+)
+
+
+@pagination_demo_router.get("/simple-list", response_model=Page[dict])
+async def paginated_simple_list(params: Params = Depends()):
+    """
+    简单列表分页示例
+    
+    展示如何对内存中的列表进行分页。
+    适用于数据量不大的场景。
+    """
+    # 创建一个简单的数据列表
+    items = [
+        {"id": i, "name": f"Item {i}", "value": i * 10}
+        for i in range(1, 101)
+    ]
+    
+    # 使用统一的 paginate 函数进行分页
+    return paginate(items, params)
+
+
+@pagination_demo_router.get("/database-query", response_model=Page[DemoResponse])
+async def paginated_database_query(
+    params: Params = Depends(),
+    status: int | None = None,
+):
+    """
+    数据库查询分页示例
+    
+    展示如何对 Tortoise ORM 查询进行分页。
+    这是实际应用中最常用的分页场景。
+    
+    支持:
+    - 自动分页
+    - 过滤条件
+    - 排序
+    """
+    # 构建查询
+    query = DemoModel.all()
+    
+    # 添加过滤条件
+    if status is not None:
+        query = query.filter(status=status)
+    
+    # 添加排序
+    query = query.order_by("-created_at")
+    
+    # 使用 paginate 进行分页（自动处理 QuerySet）
+    result = await paginate(query, params)
+    
+    # 转换为响应模型
+    items = [await DemoResponse.from_orm_model(item) for item in result.items]
+    
+    # 构造新的 Page 对象返回
+    return Page(
+        items=items,
+        total=result.total,
+        page=result.page,
+        size=result.size,
+        pages=result.pages,
     )

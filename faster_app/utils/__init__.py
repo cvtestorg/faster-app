@@ -13,14 +13,30 @@ def _import_decorators():
     return with_aerich_command
 
 
+# 延迟导入 pagination, 避免循环导入
+def _import_pagination():
+    from .pagination import Page, Params, CustomParams, paginate, apaginate
+
+    return {"Page": Page, "Params": Params, "CustomParams": CustomParams, 
+            "paginate": paginate, "apaginate": apaginate}
+
+
 # 使用属性访问来延迟导入
 def __getattr__(name):
     if name == "with_aerich_command":
         return _import_decorators()
+    if name in ("Page", "Params", "CustomParams", "paginate", "apaginate"):
+        pagination_exports = _import_pagination()
+        return pagination_exports[name]
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 __all__ = [
     "with_aerich_command",
     "BASE_DIR",
+    "Page",
+    "Params",
+    "CustomParams",
+    "paginate",
+    "apaginate",
 ]
