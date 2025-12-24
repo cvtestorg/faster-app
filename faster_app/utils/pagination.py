@@ -62,8 +62,12 @@ def paginate(items: Sequence[T] | QuerySet, params: _Params | None = None) -> Pa
     统一的分页函数
 
     自动识别数据源类型并应用相应的分页策略:
-    - 对于普通列表/序列: 使用内存分页
-    - 对于 Tortoise ORM QuerySet: 使用数据库分页
+    - 对于普通列表/序列: 使用内存分页，返回 Page[T]
+    - 对于 Tortoise ORM QuerySet: 使用数据库分页，返回 Awaitable[Page[T]]
+
+    ⚠️ 重要提示：
+    - 当传入 QuerySet 时，此函数返回一个 awaitable，必须使用 await 调用
+    - 当传入列表/序列时，此函数直接返回结果，不需要 await
 
     Args:
         items: 要分页的数据源（列表或 Tortoise QuerySet）
@@ -71,15 +75,20 @@ def paginate(items: Sequence[T] | QuerySet, params: _Params | None = None) -> Pa
 
     Returns:
         Page[T]: 分页结果，包含 items 和分页元数据
+                 (当传入 QuerySet 时返回 Awaitable[Page[T]])
 
     Example:
-        # 对列表分页
+        # 对列表分页（同步）
         items = [1, 2, 3, 4, 5]
-        result = paginate(items)
+        result = paginate(items, params)
 
-        # 对 QuerySet 分页（需要 await）
+        # 对 QuerySet 分页（异步，需要 await）
         query = User.all()
-        result = await paginate(query)
+        result = await paginate(query, params)
+
+    Note:
+        如果只需要数据库查询分页，推荐直接使用 apaginate() 函数，
+        它有明确的异步签名。
     """
     # 如果是 Tortoise ORM QuerySet，返回 awaitable
     if isinstance(items, QuerySet):

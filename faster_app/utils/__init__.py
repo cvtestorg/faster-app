@@ -17,8 +17,13 @@ def _import_decorators():
 def _import_pagination():
     from .pagination import CustomParams, Page, Params, apaginate, paginate
 
-    return {"Page": Page, "Params": Params, "CustomParams": CustomParams,
-            "paginate": paginate, "apaginate": apaginate}
+    return {
+        "Page": Page,
+        "Params": Params,
+        "CustomParams": CustomParams,
+        "paginate": paginate,
+        "apaginate": apaginate,
+    }
 
 
 # 使用属性访问来延迟导入
