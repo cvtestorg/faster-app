@@ -4,8 +4,8 @@
 提供基于 pydantic-settings 的配置管理
 """
 
-from .logging import logger, log_config
 from .config import configs
+from .logging import log_config, logger
 
 __all__ = [
     "configs",

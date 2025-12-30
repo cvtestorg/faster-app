@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+
 from faster_app.settings import configs
 
 router = APIRouter()

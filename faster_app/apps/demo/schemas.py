@@ -1,7 +1,7 @@
-from pydantic import BaseModel, Field, field_validator
-from typing import Optional
 from datetime import datetime
 from uuid import UUID
+
+from pydantic import BaseModel, Field, field_validator
 
 
 class DemoCreate(BaseModel):
@@ -14,7 +14,7 @@ class DemoCreate(BaseModel):
         description="Demo 名称",
         examples=["我的第一个 Demo"],
     )
-    status: Optional[int] = Field(
+    status: int | None = Field(
         default=1, description="状态:1-激活, 0-未激活", examples=[1]
     )
 
@@ -30,14 +30,14 @@ class DemoCreate(BaseModel):
 class DemoUpdate(BaseModel):
     """更新 Demo 的请求 Schema - 所有字段可选"""
 
-    name: Optional[str] = Field(
+    name: str | None = Field(
         None, min_length=1, max_length=255, description="Demo 名称"
     )
-    status: Optional[int] = Field(None, description="状态:1-激活, 0-未激活")
+    status: int | None = Field(None, description="状态:1-激活, 0-未激活")
 
     @field_validator("name")
     @classmethod
-    def validate_name(cls, v: Optional[str]) -> Optional[str]:
+    def validate_name(cls, v: str | None) -> str | None:
         if v is None:
             return v
         if any(char in v for char in ["<", ">", "&", "'"]):

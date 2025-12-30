@@ -5,15 +5,16 @@ This module provides a consistent API response format for all endpoints,
 including success, error, and paginated responses.
 """
 
-from http import HTTPStatus
-from typing import Any, Optional, List
-from fastapi.responses import JSONResponse
 from datetime import datetime
+from http import HTTPStatus
+from typing import Any
+
+from fastapi.responses import JSONResponse
 
 
 class ApiResponse:
     """Utility class for creating standardized API responses.
-    
+
     Provides static methods to create consistent JSON responses for
     success, error, and paginated data scenarios.
     """
@@ -33,10 +34,10 @@ class ApiResponse:
             message: Success message (default: "操作成功")
             code: Business status code (default: 200)
             status_code: HTTP status code (default: 200 OK)
-            
+
         Returns:
             JSONResponse with standardized success format
-            
+
         Example:
             >>> ApiResponse.success(data={"user_id": 123}, message="User created")
         """
@@ -54,7 +55,7 @@ class ApiResponse:
         message: str = "操作失败",
         code: int = 500,
         status_code: int = HTTPStatus.INTERNAL_SERVER_ERROR,
-        error_detail: Optional[str] = None,
+        error_detail: str | None = None,
         data: Any = None,
     ) -> JSONResponse:
         """
@@ -66,13 +67,13 @@ class ApiResponse:
             status_code: HTTP status code (default: 500 Internal Server Error)
             error_detail: Detailed error information (optional)
             data: Additional error data (optional)
-            
+
         Returns:
             JSONResponse with standardized error format
-            
+
         Note:
             Avoid including sensitive information in error_detail in production
-            
+
         Example:
             >>> ApiResponse.error(
             ...     message="Validation failed",
@@ -96,7 +97,7 @@ class ApiResponse:
 
     @staticmethod
     def paginated(
-        data: List[Any],
+        data: list[Any],
         total: int,
         page: int = 1,
         page_size: int = 10,
@@ -111,11 +112,11 @@ class ApiResponse:
             page: Current page number (1-indexed, default: 1)
             page_size: Number of items per page (default: 10)
             message: Response message (default: "查询成功")
-            
+
         Returns:
             JSONResponse with standardized pagination format including
             pagination metadata (total, page, page_size, total_pages, has_next, has_prev)
-            
+
         Example:
             >>> ApiResponse.paginated(
             ...     data=[{"id": 1}, {"id": 2}],

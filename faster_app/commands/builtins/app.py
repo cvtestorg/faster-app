@@ -1,6 +1,8 @@
 import os
 import shutil
+
 from rich.console import Console
+
 from faster_app.commands.base import BaseCommand
 from faster_app.utils import BASE_DIR
 

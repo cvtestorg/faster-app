@@ -1,7 +1,8 @@
 import json
 import logging
+from datetime import UTC, datetime
 from logging.config import dictConfig
-from datetime import datetime, timezone
+
 from faster_app.settings.config import configs
 
 
@@ -10,7 +11,7 @@ class JsonFormatter(logging.Formatter):
 
     def format(self, record):
         log_record = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "module": record.module,

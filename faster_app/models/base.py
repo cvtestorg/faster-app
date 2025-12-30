@@ -6,12 +6,13 @@ and functionality for database models.
 """
 
 from enum import IntEnum, StrEnum
+
 from tortoise import Model
 from tortoise.fields import (
+    CharEnumField,
+    DatetimeField,
     IntEnumField,
     UUIDField,
-    DatetimeField,
-    CharEnumField,
 )
 
 

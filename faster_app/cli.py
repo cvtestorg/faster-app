@@ -7,18 +7,20 @@ discovers and registers all CLI commands from the application.
 
 import os
 import sys
-from typing import Dict, Any
+from typing import Any
+
 import fire
+
 from faster_app.commands.discover import CommandDiscover
 
 
 def main() -> None:
     """
     Faster-App command-line tool main entry point.
-    
+
     Configures Python path, discovers available commands, and launches
     the Fire CLI interface.
-    
+
     Note:
         Commands are automatically discovered from apps/*/commands.py files
         and registered with Fire for CLI access.
@@ -36,7 +38,7 @@ def main() -> None:
         )
 
     # 收集命令
-    commands: Dict[str, Any] = CommandDiscover().collect()
+    commands: dict[str, Any] = CommandDiscover().collect()
     fire.Fire(commands)
 
 

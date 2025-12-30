@@ -1,11 +1,9 @@
 """Decorators for common functionality"""
 
 import asyncio
-import logging
 from functools import wraps
-from tortoise import Tortoise
 
-logger = logging.getLogger(__name__)
+from tortoise import Tortoise
 
 
 def with_tortoise_orm():
@@ -54,7 +52,7 @@ def with_aerich_command():
         def wrapper(self, *args, **kwargs):
             async def execute():
                 # 使用 aerich Command 作为异步上下文管理器
-                async with self.command as cmd:
+                async with self.command:
                     return await func(self, *args, **kwargs)
 
             return asyncio.run(execute())

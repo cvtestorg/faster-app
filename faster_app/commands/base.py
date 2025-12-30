@@ -7,25 +7,24 @@ PYTHONPATH configuration and command name generation.
 
 import os
 import sys
-from typing import List, Optional
 
 
 class BaseCommand:
     """Base class for all CLI commands.
-    
+
     Provides automatic PYTHONPATH configuration and command name generation
     from class names by removing common prefixes and suffixes.
-    
+
     Attributes:
         _DEFAULT_PREFIXES: Default list of prefixes to strip from command names
         _DEFAULT_SUFFIXES: Default list of suffixes to strip from command names
     """
 
     # 默认要去掉的前缀列表(私有属性, 避免被 Fire 暴露)
-    _DEFAULT_PREFIXES: List[str] = []
+    _DEFAULT_PREFIXES: list[str] = []
 
     # 默认要去掉的后缀列表(私有属性, 避免被 Fire 暴露)
-    _DEFAULT_SUFFIXES: List[str] = [
+    _DEFAULT_SUFFIXES: list[str] = [
         "Command",
         "Commands",
         "Handler",
@@ -37,14 +36,14 @@ class BaseCommand:
     class Meta:
         """
         Metaclass configuration for command name generation.
-        
+
         Attributes:
             PREFIXES: Additional prefixes to remove from command names
             SUFFIXES: Additional suffixes to remove from command names
         """
 
-        PREFIXES: List[str] = []
-        SUFFIXES: List[str] = []
+        PREFIXES: list[str] = []
+        SUFFIXES: list[str] = []
 
     def __init__(self) -> None:
         """Initialize the command base class and configure PYTHONPATH."""
@@ -53,7 +52,7 @@ class BaseCommand:
     def _setup_python_path(self) -> None:
         """
         Configure Python path to ensure project modules can be imported.
-        
+
         Adds the current working directory to sys.path and PYTHONPATH
         environment variable to ensure both the current process and
         subprocesses can import project modules.
@@ -73,13 +72,13 @@ class BaseCommand:
     @classmethod
     def _get_command_name(
         cls,
-        class_name: Optional[str] = None,
-        prefixes: Optional[List[str]] = None,
-        suffixes: Optional[List[str]] = None,
+        class_name: str | None = None,
+        prefixes: list[str] | None = None,
+        suffixes: list[str] | None = None,
     ) -> str:
         """
         Generate a clean command name from a class name.
-        
+
         Automatically removes common prefixes and suffixes to create
         a concise command name.
 
@@ -90,7 +89,7 @@ class BaseCommand:
 
         Returns:
             Lowercase command name with prefixes and suffixes removed
-            
+
         Example:
             >>> ServerCommand._get_command_name()
             'server'

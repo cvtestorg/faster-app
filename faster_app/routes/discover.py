@@ -1,7 +1,9 @@
-from fastapi import APIRouter
-from faster_app.utils.discover import BaseDiscover
-from faster_app.utils import BASE_DIR
 import logging
+
+from fastapi import APIRouter
+
+from faster_app.utils import BASE_DIR
+from faster_app.utils.discover import BaseDiscover
 
 logger = logging.getLogger(__name__)
 

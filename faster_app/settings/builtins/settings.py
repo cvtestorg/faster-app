@@ -2,7 +2,7 @@
 应用配置文件
 """
 
-from typing import Optional
+
 from pydantic_settings import BaseSettings
 
 
@@ -40,7 +40,7 @@ class DefaultSettings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = "STRING"
 
-    TORTOISE_ORM: Optional[dict] = None
+    TORTOISE_ORM: dict | None = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

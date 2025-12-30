@@ -5,13 +5,12 @@ Creates and configures the FastAPI application with automatic discovery
 of routes, middleware, and database configuration.
 """
 
-from typing import Optional
 from fastapi import FastAPI
 from starlette.staticfiles import StaticFiles
-from faster_app.routes.discover import RoutesDiscover
+
 from faster_app.middleware.discover import MiddlewareDiscover
-from faster_app.settings import logger
-from faster_app.settings import configs
+from faster_app.routes.discover import RoutesDiscover
+from faster_app.settings import configs, logger
 from faster_app.utils import BASE_DIR
 from faster_app.utils.db import lifespan
 

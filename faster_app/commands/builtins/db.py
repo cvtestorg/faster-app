@@ -2,12 +2,13 @@
 
 import os
 import shutil
-from typing import Optional
-from rich.console import Console
-from faster_app.commands.base import BaseCommand
-from faster_app.utils.decorators import with_aerich_command
+
 from aerich import Command
+from rich.console import Console
+
+from faster_app.commands.base import BaseCommand
 from faster_app.settings import configs
+from faster_app.utils.decorators import with_aerich_command
 
 console = Console()
 
@@ -36,7 +37,7 @@ class DBOperations(BaseCommand):
         console.print("[bold green]✅ 数据库初始化成功[/bold green]")
 
     @with_aerich_command()
-    async def migrate(self, name: Optional[str] = None, empty: bool = False) -> None:
+    async def migrate(self, name: str | None = None, empty: bool = False) -> None:
         """📝 生成迁移文件 - 根据当前模型状态创建数据库迁移
 
         Args:

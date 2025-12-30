@@ -6,25 +6,26 @@ Supports both development mode (with hot reload) and production mode.
 """
 
 import uvicorn
+from fastapi_pagination import add_pagination
+
 from faster_app.app import get_app
 from faster_app.settings import configs
 from faster_app.settings.logging import log_config
-from fastapi_pagination import add_pagination
 
 
 def main() -> None:
     """
     Main startup method for Faster APP.
-    
+
     Initializes the FastAPI application, configures pagination, and
     starts the Uvicorn server. Behavior changes based on DEBUG setting:
-    
+
     - DEBUG=True: Enables hot reload for development
     - DEBUG=False: Runs in production mode without reload
-    
+
     Note:
         Server configuration (host, port) is read from configs.
-        
+
     Example:
         Run from command line: python -m faster_app.main
         Or use CLI: faster server start

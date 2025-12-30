@@ -7,20 +7,21 @@ Demo 路由 - 展示三种 CRUD 开发模式
 """
 
 from datetime import datetime
+from http import HTTPStatus
+
 from fastapi import APIRouter, BackgroundTasks
+
+from faster_app.apps.demo.models import DemoModel
 from faster_app.apps.demo.schemas import (
     BackgroundTaskRequest,
     DemoCreate,
-    DemoUpdate,
     DemoStatistics,
+    DemoUpdate,
 )
 from faster_app.apps.demo.tasks import send_notification, write_log_to_file
 from faster_app.settings import logger
-from faster_app.apps.demo.models import DemoModel
-from faster_app.utils.crud import CRUDRouter, CRUDBase
+from faster_app.utils.crud import CRUDBase, CRUDRouter
 from faster_app.utils.response import ApiResponse
-from http import HTTPStatus
-
 
 # ==================== 模式一:快速模式 ====================
 # 5 行代码完成标准 CRUD, 适合快速原型开发
@@ -125,8 +126,7 @@ async def list_demos(
     return ApiResponse.success(
         data={
             "items": [
-                await demo_crud.response_schema.from_tortoise_orm(record)
-                for record in records
+                await demo_crud.response_schema.from_tortoise_orm(record) for record in records
             ],
             "total": total,
             "skip": skip,
@@ -146,9 +146,7 @@ async def create_demo(create_data: DemoCreate):
     # 检查名称是否重复
     existing = await DemoModel.filter(name=create_data.name).first()
     if existing:
-        return ApiResponse.error(
-            message="名称已存在", status_code=HTTPStatus.BAD_REQUEST
-        )
+        return ApiResponse.error(message="名称已存在", status_code=HTTPStatus.BAD_REQUEST)
 
     # 创建记录
     record = await demo_crud.create(create_data)
@@ -168,9 +166,7 @@ async def get_demo(record_id: str):
     if not record:
         return ApiResponse.error(message="记录不存在", status_code=HTTPStatus.NOT_FOUND)
 
-    return ApiResponse.success(
-        data=await demo_crud.response_schema.from_tortoise_orm(record)
-    )
+    return ApiResponse.success(data=await demo_crud.response_schema.from_tortoise_orm(record))
 
 
 @demo_custom_router.put("/{record_id}")
@@ -210,12 +206,8 @@ async def create_background_task(
 
     此接口展示如何使用 FastAPI 的 BackgroundTasks 来处理后台异步任务。
     """
-    background_tasks.add_task(
-        send_notification, email=request.email, message=request.message
-    )
-    background_tasks.add_task(
-        write_log_to_file, task_id=request.task_id, data=request.model_dump()
-    )
+    background_tasks.add_task(send_notification, email=request.email, message=request.message)
+    background_tasks.add_task(write_log_to_file, task_id=request.task_id, data=request.model_dump())
 
     logger.info("[主请求] 已添加后台任务, 立即返回响应")
 

@@ -4,11 +4,11 @@
 
 import importlib
 import importlib.util
-from typing import List, Dict, Any
-from faster_app.utils.discover import BaseDiscover
+from typing import Any
 
-from faster_app.utils import BASE_DIR
 from faster_app.settings import logger
+from faster_app.utils import BASE_DIR
+from faster_app.utils.discover import BaseDiscover
 
 
 class MiddlewareDiscover(BaseDiscover):
@@ -21,7 +21,7 @@ class MiddlewareDiscover(BaseDiscover):
     3. 生成最终配置
     """
 
-    INSTANCE_TYPE = Dict[str, Any]
+    INSTANCE_TYPE = dict[str, Any]
     TARGETS = [
         {
             "directory": "middleware",
@@ -39,7 +39,7 @@ class MiddlewareDiscover(BaseDiscover):
 
     def import_and_extract_instances(
         self, file_path: str, module_name: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         导入模块并提取 MIDDLEWARES 实例
 
@@ -63,7 +63,7 @@ class MiddlewareDiscover(BaseDiscover):
 
             # 查找模块中的 MIDDLEWARES 变量
             if hasattr(module, "MIDDLEWARES"):
-                middlewares = getattr(module, "MIDDLEWARES")
+                middlewares = module.MIDDLEWARES
                 # 确保 MIDDLEWARES 是一个列表
                 if isinstance(middlewares, list):
                     instances.extend(middlewares)
@@ -73,7 +73,7 @@ class MiddlewareDiscover(BaseDiscover):
 
         return instances
 
-    def discover(self) -> List[Dict[str, Any]]:
+    def discover(self) -> list[dict[str, Any]]:
         """
         自动扫描 TARGETS 中的目录和文件,
         导出所有的实例

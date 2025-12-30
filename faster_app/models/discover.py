@@ -3,7 +3,9 @@
 """
 
 from tortoise import Model
+
 from faster_app.utils.discover import BaseDiscover
+
 # from faster_app.utils import BASE_DIR
 
 

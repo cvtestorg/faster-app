@@ -1,5 +1,6 @@
-from faster_app.models.base import UUIDModel, DateTimeModel, StatusModel
 from tortoise import fields
+
+from faster_app.models.base import DateTimeModel, StatusModel, UUIDModel
 
 
 class DemoModel(UUIDModel, DateTimeModel, StatusModel):

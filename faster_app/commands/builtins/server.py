@@ -1,7 +1,9 @@
-import os
 import importlib.util
+import os
+
 import uvicorn
 from rich.console import Console
+
 from faster_app.commands.base import BaseCommand
 from faster_app.settings import configs
 from faster_app.settings.logging import log_config
@@ -47,7 +49,7 @@ class ServerOperations(BaseCommand):
                 app_target = "main:app" if configs.DEBUG else user_main.app
                 self._run_server(app_target)
                 return True
-            elif hasattr(user_main, "main") and callable(getattr(user_main, "main")):
+            elif hasattr(user_main, "main") and callable(user_main.main):
                 console.print("[bold green]▶️  执行用户自定义的 main 方法[/bold green]")
                 user_main.main()
                 return True

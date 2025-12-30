@@ -2,18 +2,19 @@
 CRUD 工具类 - 快速生成标准 CRUD 接口
 """
 
-from typing import TypeVar, Generic, Type, Optional, Dict, Any, List
-from tortoise import Model
-from tortoise.contrib.pydantic import (
-    pydantic_model_creator,
-    PydanticModel,
-)
-from pydantic import BaseModel
-from fastapi import APIRouter, HTTPException, Depends
+from typing import Any, Generic, TypeVar
+
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.tortoise import apaginate
-from faster_app.utils.response import ApiResponse
+from pydantic import BaseModel
+from tortoise import Model
+from tortoise.contrib.pydantic import (
+    PydanticModel,
+    pydantic_model_creator,
+)
 
+from faster_app.utils.response import ApiResponse
 
 ModelType = TypeVar("ModelType", bound=Model)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -28,10 +29,10 @@ class CRUDBase(
 
     def __init__(
         self,
-        model: Type[ModelType],
-        create_schema: Optional[Type[CreateSchemaType]] = None,
-        update_schema: Optional[Type[UpdateSchemaType]] = None,
-        response_schema: Optional[Type[ResponseSchemaType]] = None,
+        model: type[ModelType],
+        create_schema: type[CreateSchemaType] | None = None,
+        update_schema: type[UpdateSchemaType] | None = None,
+        response_schema: type[ResponseSchemaType] | None = None,
     ):
         """
         初始化 CRUD 对象
@@ -106,8 +107,8 @@ class CRUDBase(
         pass
 
     async def get(
-        self, record_id: Any, prefetch: Optional[List[str]] = None
-    ) -> Optional[ModelType]:
+        self, record_id: Any, prefetch: list[str] | None = None
+    ) -> ModelType | None:
         """
         根据 ID 获取单条记录
 
@@ -124,10 +125,10 @@ class CRUDBase(
         self,
         skip: int = 0,
         limit: int = 100,
-        filters: Optional[Dict[str, Any]] = None,
-        order_by: Optional[List[str]] = None,
-        prefetch: Optional[List[str]] = None,
-    ) -> List[ModelType]:
+        filters: dict[str, Any] | None = None,
+        order_by: list[str] | None = None,
+        prefetch: list[str] | None = None,
+    ) -> list[ModelType]:
         """
         获取多条记录
 
@@ -151,11 +152,11 @@ class CRUDBase(
 
         return await query.offset(skip).limit(limit)
 
-    async def get_by_filters(self, **filters) -> Optional[ModelType]:
+    async def get_by_filters(self, **filters) -> ModelType | None:
         """根据条件获取单条记录"""
         return await self.model.filter(**filters).first()
 
-    async def count(self, filters: Optional[Dict[str, Any]] = None) -> int:
+    async def count(self, filters: dict[str, Any] | None = None) -> int:
         """统计记录数"""
         query = self.model.all()
         if filters:
@@ -184,7 +185,7 @@ class CRUDBase(
 
         return instance
 
-    async def create_many(self, items_data: List[CreateSchemaType]) -> List[ModelType]:
+    async def create_many(self, items_data: list[CreateSchemaType]) -> list[ModelType]:
         """批量创建记录"""
         instances = []
         for create_data in items_data:
@@ -202,7 +203,7 @@ class CRUDBase(
 
     async def update(
         self, record_id: Any, update_data: UpdateSchemaType
-    ) -> Optional[ModelType]:
+    ) -> ModelType | None:
         """
         更新记录
 
@@ -248,7 +249,7 @@ class CRUDBase(
 
         return True
 
-    async def delete_many(self, record_ids: List[Any]) -> int:
+    async def delete_many(self, record_ids: list[Any]) -> int:
         """批量删除记录, 返回删除的数量"""
         deleted_count = 0
         for record_id in record_ids:
@@ -290,12 +291,12 @@ class CRUDRouter(Generic[ModelType]):
 
     def __init__(
         self,
-        model: Type[ModelType],
+        model: type[ModelType],
         prefix: str = "",
-        tags: Optional[List[str]] = None,
-        create_schema: Optional[Type[BaseModel]] = None,
-        update_schema: Optional[Type[BaseModel]] = None,
-        response_schema: Optional[Type[PydanticModel]] = None,
+        tags: list[str] | None = None,
+        create_schema: type[BaseModel] | None = None,
+        update_schema: type[BaseModel] | None = None,
+        response_schema: type[PydanticModel] | None = None,
         operations: str = "CRUDL",
     ):
         """

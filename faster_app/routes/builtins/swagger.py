@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from fastapi.openapi.docs import get_swagger_ui_html
+
 from faster_app.settings import configs
 
 router = APIRouter()

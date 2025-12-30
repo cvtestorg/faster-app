@@ -1,31 +1,31 @@
-import os
 import importlib.util
 import inspect
 import logging
-from typing import Dict, List, Optional, Type, Any
+import os
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
 class BaseDiscover:
     """Base class for auto-discovery of instances in the application.
-    
+
     This class provides the core functionality for scanning directories and files,
     importing modules, and extracting instances of a specific type.
-    
+
     Attributes:
         INSTANCE_TYPE: The type of instances to discover and extract
         TARGETS: List of directory/file configurations to scan
     """
-    
-    INSTANCE_TYPE: Optional[Type] = None
-    TARGETS: List[Dict[str, Any]] = []
 
-    def discover(self) -> List[Any]:
+    INSTANCE_TYPE: type | None = None
+    TARGETS: list[dict[str, Any]] = []
+
+    def discover(self) -> list[Any]:
         """
         Automatically scan directories and files defined in TARGETS,
         and extract all instances of INSTANCE_TYPE.
-        
+
         Returns:
             List of discovered instances
         """
@@ -46,26 +46,26 @@ class BaseDiscover:
     def walk(
         self,
         directory: str,
-        filename: Optional[str] = None,
-        skip_files: Optional[List[str]] = None,
-        skip_dirs: Optional[List[str]] = None,
-    ) -> List[str]:
+        filename: str | None = None,
+        skip_files: list[str] | None = None,
+        skip_dirs: list[str] | None = None,
+    ) -> list[str]:
         """
         Recursively walk through a directory and collect Python file paths.
-        
+
         Args:
             directory: The directory path to walk through
             filename: Optional specific filename to look for
             skip_files: List of filenames to skip (default: empty list)
             skip_dirs: List of directory names to skip (default: empty list)
-            
+
         Returns:
             List of absolute paths to Python files
         """
         skip_files = skip_files or []
         skip_dirs = skip_dirs or []
         results = []
-        
+
         if not os.path.exists(directory) or not os.path.isdir(directory):
             return results
 
@@ -85,10 +85,10 @@ class BaseDiscover:
     def scan(
         self,
         directory: str,
-        filename: Optional[str] = None,
-        skip_files: Optional[List[str]] = None,
-        skip_dirs: Optional[List[str]] = None,
-    ) -> List[Any]:
+        filename: str | None = None,
+        skip_files: list[str] | None = None,
+        skip_dirs: list[str] | None = None,
+    ) -> list[Any]:
         """
         Generic scanning method to discover instances in Python files.
 
@@ -97,7 +97,7 @@ class BaseDiscover:
             filename: Optional specific filename to scan (None scans all .py files)
             skip_files: List of filenames to skip
             skip_dirs: List of directory names to skip
-            
+
         Returns:
             List of discovered instances
         """
@@ -108,15 +108,11 @@ class BaseDiscover:
         files = self.walk(directory, filename, skip_files, skip_dirs)
 
         for file in files:
-            instances.extend(
-                self.import_and_extract_instances(file, file.split("/")[-1][:-3])
-            )
+            instances.extend(self.import_and_extract_instances(file, file.split("/")[-1][:-3]))
 
         return instances
 
-    def import_and_extract_instances(
-        self, file_path: str, module_name: str
-    ) -> List[Any]:
+    def import_and_extract_instances(self, file_path: str, module_name: str) -> list[Any]:
         """
         Import a module and extract instances of INSTANCE_TYPE.
 

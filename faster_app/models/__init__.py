@@ -5,8 +5,8 @@
 """
 
 from .base import (
-    UUIDModel,
     DateTimeModel,
+    UUIDModel,
 )
 from .discover import ModelDiscover
 

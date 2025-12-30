@@ -3,9 +3,10 @@
 """
 
 from pydantic_settings import BaseSettings
-from faster_app.utils.discover import BaseDiscover
+
 from faster_app.settings.builtins.settings import DefaultSettings
 from faster_app.utils import BASE_DIR
+from faster_app.utils.discover import BaseDiscover
 
 
 class SettingsDiscover(BaseDiscover):
@@ -68,6 +69,7 @@ class SettingsDiscover(BaseDiscover):
 
         # 有新字段, 需要动态创建类
         from typing import Any, Optional
+
         from pydantic import ConfigDict
 
         # 为新字段创建类型注解
