@@ -2,7 +2,7 @@
 Standardized API response utility.
 
 This module provides a consistent API response format for all endpoints,
-including success, error, and paginated responses.
+including success and error responses.
 """
 
 from datetime import datetime
@@ -16,7 +16,13 @@ class ApiResponse:
     """Utility class for creating standardized API responses.
 
     Provides static methods to create consistent JSON responses for
-    success, error, and paginated data scenarios.
+    success and error scenarios.
+
+    Note:
+        - **抛出异常**: 对于需要中断流程的错误（如 NotFoundError, UnauthorizedError 等），
+          应该抛出异常，由全局异常处理器自动处理。
+        - **返回错误响应**: 对于业务逻辑错误，但需要返回错误信息给用户而不中断流程的场景，
+          可以使用 `ApiResponse.error()` 直接返回错误响应。
     """
 
     @staticmethod
@@ -61,6 +67,10 @@ class ApiResponse:
         """
         Create an error API response.
 
+        Use this method when you need to return an error response directly
+        without raising an exception (e.g., business logic errors that should
+        be returned to the user without interrupting the flow).
+
         Args:
             message: Error message (default: "操作失败")
             code: Business error code (default: 500)
@@ -72,14 +82,22 @@ class ApiResponse:
             JSONResponse with standardized error format
 
         Note:
-            Avoid including sensitive information in error_detail in production
+            - For errors that should interrupt the flow (e.g., NotFoundError,
+              UnauthorizedError), use exceptions instead.
+            - Avoid including sensitive information in error_detail in production
 
         Example:
-            >>> ApiResponse.error(
-            ...     message="Validation failed",
-            ...     code=400,
-            ...     status_code=HTTPStatus.BAD_REQUEST
-            ... )
+            # 业务逻辑错误，需要返回给用户但不中断流程
+            >>> if not valid_condition:
+            ...     return ApiResponse.error(
+            ...         message="业务验证失败",
+            ...         code=400,
+            ...         status_code=HTTPStatus.BAD_REQUEST
+            ...     )
+
+            # 需要中断流程的错误，使用异常
+            >>> from faster_app.exceptions import NotFoundError
+            >>> raise NotFoundError(message="资源未找到")
         """
         response_data = {
             "success": False,
@@ -94,53 +112,3 @@ class ApiResponse:
             response_data["error_detail"] = error_detail
 
         return JSONResponse(content=response_data, status_code=status_code)
-
-    @staticmethod
-    def paginated(
-        data: list[Any],
-        total: int,
-        page: int = 1,
-        page_size: int = 10,
-        message: str = "查询成功",
-    ) -> JSONResponse:
-        """
-        Create a paginated API response.
-
-        Args:
-            data: List of items for the current page
-            total: Total number of items across all pages
-            page: Current page number (1-indexed, default: 1)
-            page_size: Number of items per page (default: 10)
-            message: Response message (default: "查询成功")
-
-        Returns:
-            JSONResponse with standardized pagination format including
-            pagination metadata (total, page, page_size, total_pages, has_next, has_prev)
-
-        Example:
-            >>> ApiResponse.paginated(
-            ...     data=[{"id": 1}, {"id": 2}],
-            ...     total=50,
-            ...     page=1,
-            ...     page_size=10
-            ... )
-        """
-        pagination_info = {
-            "total": total,
-            "page": page,
-            "page_size": page_size,
-            "total_pages": (total + page_size - 1) // page_size,
-            "has_next": page * page_size < total,
-            "has_prev": page > 1,
-        }
-
-        response_data = {
-            "success": True,
-            "code": 200,
-            "message": message,
-            "data": data,
-            "pagination": pagination_info,
-            "timestamp": datetime.now().isoformat(),
-        }
-
-        return JSONResponse(content=response_data, status_code=HTTPStatus.OK)

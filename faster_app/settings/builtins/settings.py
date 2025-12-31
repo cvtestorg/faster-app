@@ -2,7 +2,6 @@
 应用配置文件
 """
 
-
 from pydantic_settings import BaseSettings
 
 
@@ -39,6 +38,19 @@ class DefaultSettings(BaseSettings):
     # 日志配置
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = "STRING"
+    LOG_TO_FILE: bool = False  # 是否输出日志到文件
+    LOG_FILE_PATH: str = "logs/app.log"  # 日志文件路径
+    LOG_FILE_BACKUP_COUNT: int = 10  # 保留的备份文件数量（按天归档时，默认保留10天）
+
+    # 路由验证配置
+    VALIDATE_ROUTES: bool = True  # 是否启用路由冲突检测
+
+    # 限流配置
+    THROTTLE_RATES: dict[str, str] = {
+        "user": "100/hour",  # 已认证用户默认限流速率
+        "anon": "20/hour",  # 匿名用户默认限流速率
+        "default": "100/hour",  # 默认限流速率
+    }
 
     TORTOISE_ORM: dict | None = None
 

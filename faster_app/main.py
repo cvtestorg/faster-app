@@ -9,7 +9,7 @@ import uvicorn
 from fastapi_pagination import add_pagination
 
 from faster_app.app import get_app
-from faster_app.settings import configs
+from faster_app.settings import configs, logger
 from faster_app.settings.logging import log_config
 
 
@@ -38,6 +38,11 @@ def main() -> None:
 
     # 生产环境中不使用 reload, 只在开发环境(DEBUG=True)中启用
     reload = configs.DEBUG
+
+    logger.info(
+        f"[服务器启动] 操作: 启动服务器 主机: {configs.HOST} 端口: {configs.PORT} "
+        f"模式: {'开发' if reload else '生产'} 状态: 开始"
+    )
 
     if reload:
         # 开发模式使用字符串导入以支持热重载

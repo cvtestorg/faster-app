@@ -1,0 +1,84 @@
+"""
+用户自定义 Lifespan 配置示例
+
+将此文件复制到项目的 config/lifespan.py 来自定义应用生命周期。
+
+框架会自动发现并组合这些 lifespan 函数。
+"""
+
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
+
+@asynccontextmanager
+async def redis_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Redis 连接生命周期管理"""
+    # 启动时初始化 Redis 连接
+    import redis.asyncio as redis
+
+    redis_client = redis.Redis(host="localhost", port=6379, db=0)
+    app.state.redis = redis_client
+    print("Redis 连接已初始化")
+
+    yield
+
+    # 关闭时清理 Redis 连接
+    await redis_client.close()
+    print("Redis 连接已关闭")
+
+
+@asynccontextmanager
+async def cache_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """缓存服务生命周期管理"""
+    # 启动时初始化缓存
+    from some_cache_library import Cache
+
+    cache = Cache()
+    await cache.connect()
+    app.state.cache = cache
+    print("缓存服务已初始化")
+
+    yield
+
+    # 关闭时清理缓存
+    await cache.disconnect()
+    print("缓存服务已关闭")
+
+
+@asynccontextmanager
+async def background_tasks_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """后台任务生命周期管理"""
+    import asyncio
+
+    # 启动时启动后台任务
+    task = asyncio.create_task(background_worker())
+    app.state.background_task = task
+    print("后台任务已启动")
+
+    yield
+
+    # 关闭时停止后台任务
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
+    print("后台任务已停止")
+
+
+async def background_worker():
+    """后台工作协程"""
+    while True:
+        # 执行后台任务
+        await asyncio.sleep(60)
+        print("执行后台任务...")
+
+
+# 注意:
+# 1. 函数名可以自定义, 但必须使用 @asynccontextmanager 装饰器
+# 2. 函数签名必须是: async def xxx(app: FastAPI) -> AsyncGenerator[None, None]
+# 3. 框架会自动发现所有符合签名的函数
+# 4. 启动顺序: 框架默认 lifespan -> 用户自定义 lifespan (按文件中的定义顺序)
+# 5. 关闭顺序: 用户自定义 lifespan (逆序) -> 框架默认 lifespan (逆序)
