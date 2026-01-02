@@ -1,8 +1,17 @@
 # Changelog
 
-## [Unreleased] - 2026-01-02
+All notable changes to this project will be documented in this file.
 
-### 重大变更 (Breaking Changes)
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.1.0] - 2026-01-02
+
+### 🎉 首个主要版本发布
+
+这是 Faster APP 框架的第一个主要版本，包含重大重构、性能优化和多项改进。
+
+### ⚠️ 重大变更 (Breaking Changes)
 
 #### Exceptions 模块
 - **移除**: `register_exception_handlers()` 函数
@@ -19,7 +28,7 @@ from faster_app.exceptions import get_manager
 get_manager().apply(app)
 ```
 
-### 新增功能
+### ✨ 新增功能
 
 #### Exceptions 模块
 - 引入 `ExceptionManager` 类，提供灵活的异常处理器管理
@@ -42,7 +51,7 @@ get_manager().apply(app)
 - 简化 `register()` 方法，移除冗余的依赖验证
 - 优化 `shutdown_all()` 方法，添加空列表检查
 
-### 优化改进
+### 🔧 优化改进
 
 #### 代码简化
 - **Exceptions**: 异常类型代码量减少 70%
@@ -61,17 +70,36 @@ get_manager().apply(app)
 - 提取公共逻辑，减少重复
 - 改进错误消息和日志输出
 
-### 文档更新
+### 📚 文档更新
 - 新增 `docs/guides/exceptions.md` - 异常处理完整指南
 - 新增 `docs/guides/lifespan.md` - Lifespan 生命周期管理指南
 - 新增配置示例和高级定制示例
 - 更新 `OPTIMIZATION_REPORT.md` 优化报告
 
-### 测试
+### 🐛 Bug 修复
+
+#### 导入路径修复
+- **修复模块导入错误**: 将 `apps.demo.*` 导入路径更正为 `faster_app.apps.demo.*`，解决 `ModuleNotFoundError` 问题
+- **影响文件**: `faster_app/apps/demo/routes.py`, `faster_app/apps/demo/auth_routes.py`
+
+#### 跨平台兼容性
+- **Windows 路径支持**: 修复 `models/discover.py` 中硬编码路径分隔符问题，使用 `os.sep` 实现跨平台兼容
+- **影响**: 现在可以在 Windows、macOS 和 Linux 上正确工作
+
+### ✅ 测试
 - ✅ 异常模块完整测试
 - ✅ Lifespan 模块完整测试
 - ✅ Apps 模块完整测试
 - ✅ 完整应用集成测试
+
+---
+
+## [Unreleased]
+
+### 计划中的功能
+- 更多性能优化
+- 扩展的文档和示例
+- 社区反馈的改进
 
 ---
 
