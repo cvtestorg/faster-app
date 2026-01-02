@@ -14,15 +14,15 @@ from datetime import datetime
 
 from fastapi import BackgroundTasks, Request
 
-from apps.demo.models import DemoModel
-from apps.demo.schemas import (
+from faster_app.apps.demo.models import DemoModel
+from faster_app.apps.demo.schemas import (
     BackgroundTaskRequest,
     DemoCreate,
     DemoResponse,
     DemoStatistics,
     DemoUpdate,
 )
-from apps.demo.tasks import send_notification, write_log_to_file
+from faster_app.apps.demo.tasks import send_notification, write_log_to_file
 from faster_app.exceptions import ConflictError, NotFoundError
 from faster_app.settings import logger
 from faster_app.utils.response import ApiResponse

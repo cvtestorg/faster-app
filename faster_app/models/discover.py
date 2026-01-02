@@ -2,6 +2,8 @@
 自动发现 apps 目录下的 models 模块
 """
 
+import os
+
 from tortoise import Model
 
 # from faster_app.utils import BASE_DIR
@@ -41,7 +43,7 @@ class ModelDiscover(BaseDiscover):
             for file_path in files:
                 # 将文件路径转换为模块路径
                 # 例如: apps/auth/models.py -> apps.auth.models
-                module_path = file_path.replace("/", ".").replace(".py", "")
+                module_path = file_path.replace(os.sep, ".").replace(".py", "")
 
                 # 提取app名称 (例如: apps.auth.models -> auth)
                 path_parts = module_path.split(".")
