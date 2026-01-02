@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "faster_app"
-version = "0.0.43"
+version = "0.1.0"
 description = "一个轻量级的 Python Web 框架, 提供自动发现、模型基类、命令行工具等功能"
 readme = "README.md"
 license = "MIT"
@@ -77,11 +77,11 @@ select = [
     "SIM", # flake8-simplify
 ]
 ignore = [
-    "E501",  # Line too long (handled by formatter)
+    "E501", # Line too long (handled by formatter)
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]  # Allow unused imports in __init__.py
+"__init__.py" = ["F401"] # Allow unused imports in __init__.py
 
 [tool.mypy]
 # MyPy configuration for type checking
