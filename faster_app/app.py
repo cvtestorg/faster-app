@@ -65,9 +65,9 @@ def create_app() -> FastAPI:
         logger.info(f"[应用初始化] 操作: 加载路由 数量: {route_count} 状态: 成功")
 
     # 注册异常处理器
-    from faster_app.exceptions.handlers import register_exception_handlers
+    from faster_app.exceptions import get_manager
 
-    register_exception_handlers(app)
+    get_manager().apply(app)
 
     logger.info(
         f"[应用初始化] 操作: 应用创建 应用名: {configs.PROJECT_NAME} 版本: {configs.VERSION} 状态: 完成"

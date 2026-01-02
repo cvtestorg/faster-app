@@ -54,7 +54,7 @@ class SettingsDiscover(BaseDiscover):
             user_overrides.update(user_dict)
 
         # 获取 DefaultSettings 的所有字段和默认值
-        default_fields = set(default_settings.model_fields.keys())
+        default_fields = set(DefaultSettings.model_fields.keys())
         default_values = default_settings.model_dump()
 
         # 找出用户配置中的新字段
@@ -68,7 +68,7 @@ class SettingsDiscover(BaseDiscover):
             return DefaultSettings(**merged_values)
 
         # 有新字段, 需要动态创建类
-        from typing import Any, Optional
+        from typing import Any
 
         from pydantic import ConfigDict
 
@@ -85,16 +85,14 @@ class SettingsDiscover(BaseDiscover):
                 else:
                     new_annotations[field] = Any
             else:
-                # None 值使用 Optional[Any]
-                new_annotations[field] = Optional[Any]
+                # None 值使用 Any | None
+                new_annotations[field] = Any | None
 
         # 创建新的模型配置, 允许额外字段
-        model_config = ConfigDict(
-            extra="allow", env_file=".env", env_file_encoding="utf-8"
-        )
+        model_config = ConfigDict(extra="allow", env_file=".env", env_file_encoding="utf-8")
 
         # 动态创建新的配置类
-        DynamicSettings = type(
+        dynamic_settings_class = type(
             "DynamicSettings",
             (DefaultSettings,),
             {
@@ -109,5 +107,5 @@ class SettingsDiscover(BaseDiscover):
 
         # 创建实例 - 合并默认值和用户覆盖值
         merged_values = {**default_values, **user_overrides}
-        merged_settings = DynamicSettings(**merged_values)
+        merged_settings = dynamic_settings_class(**merged_values)
         return merged_settings

@@ -8,6 +8,7 @@ from rich.console import Console
 
 from faster_app.commands.base import BaseCommand
 from faster_app.settings import configs
+from faster_app.settings.builtins.orm import TORTOISE_ORM
 from faster_app.utils.decorators import with_aerich_command
 
 console = Console()
@@ -19,7 +20,7 @@ class DBOperations(BaseCommand):
     def __init__(self, fake: bool = False):
         super().__init__()  # 调用父类初始化, 自动配置 PYTHONPATH
         self.fake = fake
-        self.command = Command(tortoise_config=configs.TORTOISE_ORM)
+        self.aerich = Command(tortoise_config=TORTOISE_ORM)
 
     @with_aerich_command()
     async def init(self) -> None:
@@ -27,13 +28,13 @@ class DBOperations(BaseCommand):
 
         创建 ./migrations 目录用于存放数据库迁移文件
         """
-        await self.command.init()
+        await self.aerich.init()
         console.print("[bold green]✅ 数据库迁移目录创建成功[/bold green]")
 
     @with_aerich_command()
     async def init_db(self) -> None:
         """🛠️ 初始化数据库架构 - 生成数据库表结构和应用迁移目录"""
-        await self.command.init_db(safe=True)
+        await self.aerich.init_db(safe=True)
         console.print("[bold green]✅ 数据库初始化成功[/bold green]")
 
     @with_aerich_command()
@@ -44,7 +45,7 @@ class DBOperations(BaseCommand):
             name: 迁移文件名称
             empty: 是否生成空的迁移文件
         """
-        await self.command.migrate(name=name, empty=empty)
+        await self.aerich.migrate(name=name, empty=empty)
         if empty:
             console.print("[bold green]✅ 空迁移文件生成成功[/bold green]")
         else:
@@ -53,7 +54,7 @@ class DBOperations(BaseCommand):
     @with_aerich_command()
     async def upgrade(self) -> None:
         """⬆️ 执行数据库迁移 - 升级到最新的迁移版本"""
-        await self.command.upgrade(fake=self.fake)
+        await self.aerich.upgrade(fake=self.fake)
         console.print("[bold green]✅ 数据库迁移执行成功[/bold green]")
 
     @with_aerich_command()
@@ -63,13 +64,13 @@ class DBOperations(BaseCommand):
         Args:
             version: 目标版本号, 默认 -1 表示回滚一个版本
         """
-        await self.command.downgrade(version=version, delete=True, fake=self.fake)
+        await self.aerich.downgrade(version=version, delete=True, fake=self.fake)
         console.print("[bold green]✅ 数据库回滚成功[/bold green]")
 
     @with_aerich_command()
     async def history(self) -> None:
         """📜 查看迁移历史 - 显示所有数据库迁移记录"""
-        history = await self.command.history()
+        history = await self.aerich.history()
         console.print("[bold cyan]📜 迁移历史记录:[/bold cyan]")
         for record in history:
             console.print(f"  [dim]•[/dim] {record}")
@@ -77,7 +78,7 @@ class DBOperations(BaseCommand):
     @with_aerich_command()
     async def heads(self) -> None:
         """🔍 查看待应用迁移 - 显示当前可用的未应用迁移"""
-        heads = await self.command.heads()
+        heads = await self.aerich.heads()
         console.print("[bold cyan]🔍 当前迁移头部:[/bold cyan]")
         for record in heads:
             console.print(f"  [dim]•[/dim] {record}")
@@ -93,27 +94,21 @@ class DBOperations(BaseCommand):
         """
         # 安全检查:仅在调试模式下允许
         if not configs.DEBUG:
-            console.print(
-                "[bold red]❌ 此操作仅允许在开发环境中执行 (DEBUG=True)![/bold red]"
-            )
+            console.print("[bold red]❌ 此操作仅允许在开发环境中执行 (DEBUG=True)![/bold red]")
             return
 
         try:
             # 删除数据库文件
-            db_file = f"{configs._normalize_db_name(configs.PROJECT_NAME)}.db"
+            db_file = "db.sqlite"
             if os.path.exists(db_file):
                 os.remove(db_file)
-                console.print(
-                    f"[bold green]✅ 数据库文件已删除: {db_file}[/bold green]"
-                )
+                console.print(f"[bold green]✅ 数据库文件已删除: {db_file}[/bold green]")
 
             # 递归删除 migrations 目录
             migrations_dir = "migrations"
             if os.path.exists(migrations_dir):
                 shutil.rmtree(migrations_dir)
-                console.print(
-                    f"[bold green]✅ 迁移目录已删除: {migrations_dir}[/bold green]"
-                )
+                console.print(f"[bold green]✅ 迁移目录已删除: {migrations_dir}[/bold green]")
 
             console.print("[bold green]✅ 开发环境数据清理成功[/bold green]")
         except Exception as e:

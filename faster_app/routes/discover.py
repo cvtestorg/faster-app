@@ -2,10 +2,10 @@ import logging
 
 from fastapi import APIRouter
 
+from faster_app.routes.validator import RouteConflictError, RouteValidator
+from faster_app.settings import configs
 from faster_app.utils import BASE_DIR
 from faster_app.utils.discover import BaseDiscover
-from faster_app.routes.validator import RouteValidator, RouteConflictError
-from faster_app.settings import configs
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +34,7 @@ class RoutesDiscover(BaseDiscover):
         # },
     ]
 
-    def import_and_extract_instances(
-        self, file_path: str, module_name: str
-    ) -> list[APIRouter]:
+    def import_and_extract_instances(self, file_path: str, module_name: str) -> list[APIRouter]:
         """
         导入模块并提取路由实例
         对于路由, 我们查找已经实例化的 APIRouter 对象
@@ -91,10 +89,14 @@ class RoutesDiscover(BaseDiscover):
                 if router.prefix:
                     source_parts.append(f"prefix='{router.prefix}'")
                 if router.tags:
-                    tags_str = ", ".join(router.tags) if isinstance(router.tags, list) else str(router.tags)
+                    tags_str = (
+                        ", ".join(router.tags)
+                        if isinstance(router.tags, list)
+                        else str(router.tags)
+                    )
                     source_parts.append(f"tags=[{tags_str}]")
-                
-                source = f"Router #{i+1}"
+
+                source = f"Router #{i + 1}"
                 if source_parts:
                     source += f" ({', '.join(source_parts)})"
 

@@ -5,6 +5,7 @@
 """
 
 from faster_app.exceptions.base import FasterAppError
+from faster_app.exceptions.manager import ExceptionManager, get_manager
 from faster_app.exceptions.types import (
     BadRequestError,
     ConflictError,
@@ -26,4 +27,6 @@ __all__ = [
     "ConflictError",
     "TooManyRequestsError",
     "InternalServerError",
+    "ExceptionManager",
+    "get_manager",
 ]

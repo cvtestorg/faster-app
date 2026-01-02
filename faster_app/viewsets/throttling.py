@@ -5,23 +5,25 @@
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import TYPE_CHECKING
 
 from fastapi import Request
 
-from faster_app.exceptions import TooManyRequestsError
 from faster_app.settings import configs
+
+if TYPE_CHECKING:
+    from faster_app.viewsets.base import ViewSet
 
 
 class BaseThrottle(ABC):
     """
     限流基类
-    
+
     所有限流类都应继承此类，实现限流逻辑。
     """
 
     @abstractmethod
-    async def allow_request(self, request: Request, view: Any) -> bool:
+    async def allow_request(self, request: Request, view: "ViewSet") -> bool:
         """
         检查是否允许请求
 
@@ -72,7 +74,7 @@ class BaseThrottle(ABC):
 class SimpleRateThrottle(BaseThrottle):
     """
     简单速率限流
-    
+
     基于时间窗口的限流，支持配置速率（如 "100/hour"）。
     """
 
@@ -120,7 +122,7 @@ class SimpleRateThrottle(BaseThrottle):
         period_seconds = period_map.get(period.lower(), 1)
         return (num_requests, period_seconds)
 
-    def get_rate(self, view: Any) -> str:
+    def get_rate(self, view: "ViewSet") -> str:
         """
         获取速率配置（可被子类重写）
 
@@ -150,7 +152,7 @@ class SimpleRateThrottle(BaseThrottle):
         throttle_rates = getattr(configs, "THROTTLE_RATES", {})
         return throttle_rates.get("default", "")
 
-    def get_cache_key(self, request: Request, view: Any) -> str:
+    def get_cache_key(self, request: Request, view: "ViewSet") -> str:
         """
         获取缓存键（可被子类重写）
 
@@ -165,7 +167,7 @@ class SimpleRateThrottle(BaseThrottle):
         scope = self.scope or getattr(view, "throttle_scope", "default")
         return f"throttle_{scope}_{ident}"
 
-    async def allow_request(self, request: Request, view: Any) -> bool:
+    async def allow_request(self, request: Request, view: "ViewSet") -> bool:
         """
         检查是否允许请求
 
@@ -176,9 +178,7 @@ class SimpleRateThrottle(BaseThrottle):
         Returns:
             True 表示允许请求，False 表示需要限流
         """
-        if not self.rate:
-            return True
-
+        # 先获取实际的 rate 配置
         rate = self.get_rate(view)
         if not rate:
             return True
@@ -202,9 +202,7 @@ class SimpleRateThrottle(BaseThrottle):
 
         # 清理过期记录
         cutoff = now - duration
-        self._cache[key] = [
-            timestamp for timestamp in self._cache[key] if timestamp > cutoff
-        ]
+        self._cache[key] = [timestamp for timestamp in self._cache[key] if timestamp > cutoff]
 
         # 检查是否超过限制
         if len(self._cache[key]) >= num_requests:
@@ -230,13 +228,13 @@ class SimpleRateThrottle(BaseThrottle):
 class UserRateThrottle(SimpleRateThrottle):
     """
     用户限流
-    
+
     对已认证用户进行限流。
     """
 
     scope = "user"
 
-    def get_cache_key(self, request: Request, view: Any) -> str:
+    def get_cache_key(self, request: Request, view: "ViewSet") -> str:
         """
         获取缓存键（基于用户 ID）
 
@@ -249,18 +247,14 @@ class UserRateThrottle(SimpleRateThrottle):
         """
         if hasattr(request.state, "user") and request.state.user:
             user_id = getattr(request.state.user, "id", None)
-            if user_id:
-                ident = str(user_id)
-            else:
-                ident = self.get_ident(request)
+            ident = str(user_id) if user_id else self.get_ident(request)
         else:
-            # 未认证用户，使用 IP
             ident = self.get_ident(request)
 
         scope = self.scope or getattr(view, "throttle_scope", "user")
         return f"throttle_{scope}_{ident}"
 
-    async def allow_request(self, request: Request, view: Any) -> bool:
+    async def allow_request(self, request: Request, view: "ViewSet") -> bool:
         """
         检查是否允许请求（仅对已认证用户限流）
 
@@ -281,13 +275,13 @@ class UserRateThrottle(SimpleRateThrottle):
 class AnonRateThrottle(SimpleRateThrottle):
     """
     匿名用户限流
-    
+
     对未认证用户进行限流。
     """
 
     scope = "anon"
 
-    async def allow_request(self, request: Request, view: Any) -> bool:
+    async def allow_request(self, request: Request, view: "ViewSet") -> bool:
         """
         检查是否允许请求（仅对未认证用户限流）
 
@@ -308,11 +302,11 @@ class AnonRateThrottle(SimpleRateThrottle):
 class ScopedRateThrottle(SimpleRateThrottle):
     """
     作用域限流
-    
+
     基于作用域的限流，每个 ViewSet 可以配置不同的限流速率。
     """
 
-    def get_rate(self, view: Any) -> str:
+    def get_rate(self, view: "ViewSet") -> str:
         """
         从 ViewSet 的 throttle_scope 获取速率
 
@@ -322,12 +316,10 @@ class ScopedRateThrottle(SimpleRateThrottle):
         Returns:
             速率字符串
         """
-        if hasattr(view, "throttle_scope"):
-            scope = view.throttle_scope
-            # TODO: 从配置中获取速率
-            # rate = get_throttle_rate(scope)
-            # if rate:
-            #     return rate
+        if hasattr(view, "throttle_scope") and view.throttle_scope:
+            throttle_rates = getattr(configs, "THROTTLE_RATES", {})
+            if view.throttle_scope in throttle_rates:
+                return throttle_rates[view.throttle_scope]
 
         # 如果没有配置，使用默认速率
         return self.rate or ""
@@ -336,9 +328,9 @@ class ScopedRateThrottle(SimpleRateThrottle):
 class NoThrottle(BaseThrottle):
     """
     不限流
-    
+
     不进行任何限流检查。
     """
 
-    async def allow_request(self, request: Request, view: Any) -> bool:
+    async def allow_request(self, request: Request, view: "ViewSet") -> bool:
         return True

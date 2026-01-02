@@ -18,10 +18,10 @@ from tortoise.fields import (
 
 class UUIDModel(Model):
     """Base model class with UUID primary key.
-    
+
     Provides a UUID field as the primary key for models that need
     globally unique identifiers.
-    
+
     Attributes:
         id: UUID field serving as the primary key
     """
@@ -34,10 +34,10 @@ class UUIDModel(Model):
 
 class DateTimeModel(Model):
     """Base model class with automatic timestamp fields.
-    
+
     Provides created_at and updated_at fields that are automatically
     managed by the ORM.
-    
+
     Attributes:
         created_at: Timestamp when the record was created
         updated_at: Timestamp when the record was last updated
@@ -52,10 +52,10 @@ class DateTimeModel(Model):
 
 class StatusModel(Model):
     """Base model class with status field.
-    
+
     Provides a status field with predefined enum values for tracking
     record state (active/inactive).
-    
+
     Attributes:
         status: Integer status field with ACTIVE=1 or INACTIVE=0
     """
@@ -74,10 +74,10 @@ class StatusModel(Model):
 
 class ScopeModel(Model):
     """Base model class with scope field for multi-tenancy support.
-    
+
     Provides a scope field to support different levels of data isolation
     in multi-tenant applications.
-    
+
     Attributes:
         scope: String enum defining the isolation level of the record
     """

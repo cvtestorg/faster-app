@@ -6,62 +6,112 @@
 
 from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
+from functools import lru_cache
 
 from fastapi import FastAPI
 
 from faster_app.lifespan.apps import apps_lifespan
-from faster_app.lifespan.combine import combine_lifespans
 from faster_app.lifespan.database import database_lifespan
 from faster_app.lifespan.discover import LifespanDiscover
-from faster_app.settings import logger
+from faster_app.lifespan.manager import LifespanManager
+from faster_app.settings import configs, logger
 
 
-def get_lifespan() -> Callable[[FastAPI], AsyncGenerator[None, None]]:
+@lru_cache(maxsize=1)
+def _discover_user_lifespans() -> list:
+    """发现用户自定义的 lifespan (带缓存)
+    
+    Returns:
+        用户自定义的 lifespan 函数列表
     """
-    获取组合后的 lifespan 函数
+    try:
+        user_lifespans = LifespanDiscover().discover()
+        if user_lifespans:
+            logger.info(f"发现 {len(user_lifespans)} 个用户自定义 lifespan")
+        return user_lifespans
+    except Exception as e:
+        logger.warning(f"发现用户自定义 lifespan 失败: {e}, 使用默认配置")
+        return []
+
+
+def get_lifespan(
+    *,
+    enable_database: bool | None = None,
+    enable_apps: bool | None = None,
+    enable_user: bool | None = None,
+) -> Callable[[FastAPI], AsyncGenerator[None, None]]:
+    """获取组合后的 lifespan 函数
 
     自动组合:
     1. 框架默认的 lifespan (database_lifespan, apps_lifespan)
     2. 用户自定义的 lifespan (从 config/lifespan.py 自动发现)
 
-    启动顺序: 数据库 -> 应用 -> 用户自定义 lifespan
-    关闭顺序: 用户自定义 lifespan -> 应用 -> 数据库 (自动逆序)
+    启动顺序由优先级决定 (默认: 数据库 -> 应用 -> 用户自定义)
+    关闭顺序自动逆序
+
+    通过配置可以控制启用哪些 lifespan:
+    - ENABLE_DATABASE_LIFESPAN: 是否启用数据库 lifespan (默认 True)
+    - ENABLE_APPS_LIFESPAN: 是否启用应用 lifespan (默认 True)
+    - ENABLE_USER_LIFESPANS: 是否启用用户自定义 lifespan (默认 True)
+
+    Args:
+        enable_database: 是否启用数据库 lifespan，None 表示从配置读取
+        enable_apps: 是否启用应用 lifespan，None 表示从配置读取
+        enable_user: 是否启用用户自定义 lifespan，None 表示从配置读取
 
     Returns:
         组合后的 lifespan 函数
     """
-    # 框架默认的 lifespan
-    default_lifespans = [database_lifespan, apps_lifespan]
-
-    # 发现用户自定义的 lifespan
-    try:
-        user_lifespans = LifespanDiscover().discover()
-        if user_lifespans:
-            logger.info(f"发现 {len(user_lifespans)} 个用户自定义 lifespan")
-            # 用户自定义的 lifespan 在框架默认之后执行
-            all_lifespans = default_lifespans + user_lifespans
-        else:
-            all_lifespans = default_lifespans
-    except Exception as e:
-        logger.warning(f"发现用户自定义 lifespan 失败: {e}, 使用默认配置")
-        all_lifespans = default_lifespans
-
-    # 组合所有 lifespan
-    return combine_lifespans(*all_lifespans)
+    manager = LifespanManager()
+    
+    # 注册内置 lifespan (优先级: 数据库 < 应用 < 用户自定义)
+    # 参数优先级高于配置
+    if enable_database is None:
+        enable_database = getattr(configs, "ENABLE_DATABASE_LIFESPAN", True)
+    if enable_apps is None:
+        enable_apps = getattr(configs, "ENABLE_APPS_LIFESPAN", True)
+    if enable_user is None:
+        enable_user = getattr(configs, "ENABLE_USER_LIFESPANS", True)
+    
+    manager.register(
+        "database",
+        database_lifespan,
+        enabled=enable_database,
+        priority=10,
+    )
+    
+    manager.register(
+        "apps",
+        apps_lifespan,
+        enabled=enable_apps,
+        priority=20,
+    )
+    
+    # 注册用户自定义的 lifespan
+    if enable_user:
+        user_lifespans = _discover_user_lifespans()
+        for idx, user_lifespan in enumerate(user_lifespans):
+            lifespan_name = getattr(user_lifespan, "__name__", f"user_lifespan_{idx}")
+            manager.register(
+                lifespan_name,
+                user_lifespan,
+                enabled=True,
+                priority=100 + idx,  # 用户 lifespan 优先级最低
+            )
+    
+    return manager.build()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    """
-    组合的生命周期管理
+    """组合的生命周期管理
 
     使用 get_lifespan() 获取组合后的 lifespan, 自动包含:
-    1. database_lifespan - 数据库连接生命周期
-    2. apps_lifespan - 应用生命周期
-    3. 用户自定义的 lifespan (从 config/lifespan.py 自动发现)
+    1. database_lifespan - 数据库连接生命周期 (可通过 ENABLE_DATABASE_LIFESPAN 控制)
+    2. apps_lifespan - 应用生命周期 (可通过 ENABLE_APPS_LIFESPAN 控制)
+    3. 用户自定义的 lifespan (可通过 ENABLE_USER_LIFESPANS 控制)
 
-    启动顺序: 数据库 -> 应用 -> 用户自定义
-    关闭顺序: 用户自定义 -> 应用 -> 数据库 (自动逆序)
+    启动顺序由优先级决定，关闭顺序自动逆序
 
     Args:
         app: FastAPI application instance

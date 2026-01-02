@@ -4,11 +4,6 @@ ViewSet 实现类
 提供常用的 ViewSet 组合类，包括 ModelViewSet 和 ReadOnlyModelViewSet。
 """
 
-from typing import Any
-
-from fastapi import APIRouter, Request
-
-from faster_app.viewsets.actions import action
 from faster_app.viewsets.base import ViewSet
 from faster_app.viewsets.mixins import (
     CreateModelMixin,
@@ -56,7 +51,7 @@ class ModelViewSet(
                 instance.status = 1
                 await instance.save()
                 serializer_class = self.get_serializer_class("retrieve")
-                return await serializer_class.from_tortoise_orm(instance)
+                return await serializer_class.from_orm_model(instance)
 
         # 注册路由
         router = as_router(DemoViewSet, prefix="/demos", tags=["Demo"])
@@ -86,6 +81,7 @@ class ModelViewSet(
             router = DemoViewSet.as_router(prefix="/demos", tags=["Demo"])
         """
         from faster_app.viewsets.routers import as_router
+
         return as_router(cls, prefix=prefix, tags=tags, operations=operations)
 
 
@@ -129,4 +125,5 @@ class ReadOnlyModelViewSet(
             APIRouter 实例
         """
         from faster_app.viewsets.routers import as_router
+
         return as_router(cls, prefix=prefix, tags=tags, operations=operations)

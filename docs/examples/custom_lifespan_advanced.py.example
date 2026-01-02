@@ -1,0 +1,105 @@
+"""
+高级 Lifespan 定制示例
+
+展示如何使用 LifespanManager 进行高级定制。
+"""
+
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
+from faster_app.lifespan import LifespanManager
+
+
+# 1. 定义自定义 lifespan 函数
+@asynccontextmanager
+async def cache_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Redis 缓存生命周期"""
+    # 启动时连接 Redis
+    print("Connecting to Redis...")
+    # redis_client = await connect_redis()
+    # app.state.redis = redis_client
+    
+    yield
+    
+    # 关闭时断开连接
+    print("Disconnecting from Redis...")
+    # await redis_client.close()
+
+
+@asynccontextmanager
+async def message_queue_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """消息队列生命周期"""
+    # 启动时连接消息队列
+    print("Connecting to Message Queue...")
+    # mq_client = await connect_mq()
+    # app.state.mq = mq_client
+    
+    yield
+    
+    # 关闭时断开连接
+    print("Disconnecting from Message Queue...")
+    # await mq_client.close()
+
+
+# 2. 创建自定义的 lifespan 管理器
+def create_custom_lifespan():
+    """创建自定义的 lifespan 配置"""
+    manager = LifespanManager()
+    
+    # 注册内置 lifespan (可选)
+    from faster_app.lifespan import apps_lifespan, database_lifespan
+    
+    manager.register("database", database_lifespan, enabled=True, priority=10)
+    manager.register("apps", apps_lifespan, enabled=True, priority=20)
+    
+    # 注册自定义 lifespan
+    manager.register("cache", cache_lifespan, enabled=True, priority=30)
+    manager.register(
+        "message_queue",
+        message_queue_lifespan,
+        enabled=False,  # 默认禁用
+        priority=40,
+    )
+    
+    # 根据环境变量动态启用
+    import os
+    if os.getenv("ENABLE_MQ") == "true":
+        manager.enable("message_queue")
+    
+    return manager.build()
+
+
+# 3. 在创建应用时使用
+def create_app():
+    app = FastAPI(
+        title="My App",
+        lifespan=create_custom_lifespan(),
+    )
+    return app
+
+
+# 示例：动态控制 lifespan
+def example_dynamic_control():
+    """展示如何动态控制 lifespan"""
+    manager = LifespanManager()
+    
+    # 注册多个 lifespan
+    manager.register("db", database_lifespan, priority=10)
+    manager.register("cache", cache_lifespan, priority=20)
+    manager.register("mq", message_queue_lifespan, priority=30)
+    
+    # 列出启用的
+    print("Enabled lifespans:", manager.list_enabled())
+    
+    # 禁用某个
+    manager.disable("cache")
+    print("After disabling cache:", manager.list_enabled())
+    
+    # 重新启用
+    manager.enable("cache")
+    print("After enabling cache:", manager.list_enabled())
+    
+    # 构建最终的 lifespan
+    return manager.build()

@@ -16,16 +16,17 @@ from faster_app.settings import logger
 @asynccontextmanager
 async def apps_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """应用生命周期管理"""
+    registry = None
+    
     try:
         logger.info("[生命周期] 操作: 发现应用生命周期")
         registry = AppLifecycleDiscover().discover()
         app.state.app_registry = registry
 
-        if registry.list_apps():
-            app_count = len(registry.list_apps())
-            logger.info(f"[生命周期] 操作: 发现应用 数量: {app_count}")
+        if registry.has_apps():
+            logger.info(f"[生命周期] 操作: 发现应用 数量: {registry.app_count}")
             await registry.startup_all()
-            logger.info(f"[生命周期] 操作: 启动应用 状态: 完成 数量: {app_count}")
+            logger.info(f"[生命周期] 操作: 启动应用 状态: 完成 数量: {registry.app_count}")
         else:
             logger.info("[生命周期] 操作: 发现应用 状态: 未发现 动作: 跳过启动")
     except Exception as e:
@@ -35,8 +36,7 @@ async def apps_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     yield
 
     # 关闭所有应用
-    if hasattr(app.state, "app_registry"):
-        registry = app.state.app_registry
+    if registry and registry.has_apps():
         try:
             logger.info("[生命周期] 操作: 关闭应用 状态: 开始")
             await registry.shutdown_all()

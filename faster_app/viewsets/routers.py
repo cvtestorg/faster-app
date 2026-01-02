@@ -8,6 +8,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, Request
 from fastapi_pagination import Params
+from pydantic import BaseModel
 
 from faster_app.viewsets.base import ViewSet
 from faster_app.viewsets.mixins import (
@@ -55,12 +56,23 @@ class ViewSetRouter:
             APIRouter 实例
 
         Note:
-            ViewSet 实例在每次请求时创建，确保无状态性
+            ViewSet 实例在每次请求时创建，确保无状态性和线程安全。
+            
+            性能优化说明：
+            - ViewSet 类已经在类级别缓存了无状态组件（权限、认证、过滤后端等），
+              所以实例创建的开销主要是对象初始化，性能影响较小
+            - 如果性能成为瓶颈，可以考虑：
+              1. 使用 FastAPI 的依赖注入系统管理 ViewSet 生命周期
+              2. 使用单例模式（仅当 ViewSet 完全无状态时，需谨慎）
+              3. 添加性能测试验证当前实现是否满足需求
         """
         router = APIRouter(prefix=self.prefix, tags=self.tags)
 
         # 创建一个临时实例用于检查类型和获取序列化器类
         temp_instance = self.viewset_class()
+
+        # 先注册自定义 action 路由（更具体的路由先注册，避免被通配路由捕获）
+        self._register_custom_actions(router, self.viewset_class)
 
         # 注册标准 CRUD 路由（每次请求创建新实例）
         if "L" in self.operations and isinstance(temp_instance, ListModelMixin):
@@ -79,9 +91,6 @@ class ViewSetRouter:
         if "D" in self.operations and isinstance(temp_instance, DestroyModelMixin):
             self._register_destroy_route(router, self.viewset_class)
 
-        # 注册自定义 action 路由
-        self._register_custom_actions(router, self.viewset_class)
-
         return router
 
     def _register_list_route(
@@ -91,17 +100,36 @@ class ViewSetRouter:
 
         @router.get("/", response_model=Any)
         async def list_view(request: Request, pagination: Params = Depends()):
-            # 每次请求创建新的 ViewSet 实例，确保无状态
+            # 每次请求创建新的 ViewSet 实例，确保无状态性和线程安全
+            # ViewSet 类已经缓存了无状态组件（权限、认证、过滤后端等），
+            # 所以实例创建的开销主要是对象初始化，性能影响较小
             viewset = viewset_class()
             return await viewset.list(request, pagination)
+
+    def _get_serializer_class(
+        self, viewset_class: type[ViewSet], serializer_type: str = "create"
+    ) -> type[BaseModel]:
+        """
+        获取序列化器类
+
+        Args:
+            viewset_class: ViewSet 类
+            serializer_type: 序列化器类型 ('create' 或 'update')
+
+        Returns:
+            序列化器类
+        """
+        temp_instance = viewset_class()
+        if serializer_type == "create":
+            return temp_instance.create_serializer_class or temp_instance.serializer_class
+        else:  # update
+            return temp_instance.update_serializer_class or temp_instance.serializer_class
 
     def _register_create_route(
         self, router: APIRouter, viewset_class: type[ViewSet]
     ) -> None:
         """注册创建路由"""
-        # 创建临时实例获取序列化器类
-        temp_instance = viewset_class()
-        serializer_class = temp_instance.create_serializer_class or temp_instance.serializer_class
+        serializer_class = self._get_serializer_class(viewset_class, "create")
 
         @router.post("/", response_model=Any)
         async def create_view(request: Request, create_data: serializer_class):
@@ -124,9 +152,7 @@ class ViewSetRouter:
         self, router: APIRouter, viewset_class: type[ViewSet]
     ) -> None:
         """注册完整更新路由"""
-        # 创建临时实例获取序列化器类
-        temp_instance = viewset_class()
-        serializer_class = temp_instance.update_serializer_class or temp_instance.serializer_class
+        serializer_class = self._get_serializer_class(viewset_class, "update")
 
         @router.put("/{pk}", response_model=Any)
         async def update_view(request: Request, pk: str, update_data: serializer_class):
@@ -138,9 +164,7 @@ class ViewSetRouter:
         self, router: APIRouter, viewset_class: type[ViewSet]
     ) -> None:
         """注册部分更新路由"""
-        # 创建临时实例获取序列化器类
-        temp_instance = viewset_class()
-        serializer_class = temp_instance.update_serializer_class or temp_instance.serializer_class
+        serializer_class = self._get_serializer_class(viewset_class, "update")
 
         @router.patch("/{pk}", response_model=Any)
         async def partial_update_view(
@@ -200,39 +224,68 @@ class ViewSetRouter:
             # 为每个方法创建独立的处理函数
             # 使用默认参数来避免闭包问题
             for method in methods:
+                # 检查 action 方法的签名
+                import inspect
+                from typing import get_type_hints
+                
+                sig = inspect.signature(attr)
+                # 获取原始方法的参数（不包括 self）
+                original_params = list(sig.parameters.values())[1:]  # 跳过 self
+                
+                # 创建新的参数列表（用于 handler 函数）
+                handler_params = []
+                action_call_params = []
+                
+                for param in original_params:
+                    if param.name in ('request', 'pk'):
+                        # request 和 pk 是固定参数
+                        handler_params.append(param)
+                        action_call_params.append(param.name)
+                    else:
+                        # 其他参数需要传递给 action
+                        handler_params.append(param)
+                        action_call_params.append(param.name)
+                
                 # 使用默认参数来捕获当前循环的值
                 def make_handler(
                     action_method=attr,
                     is_detail=detail,
                     vs_class=viewset_class,
                     action_name=attr_name,
+                    call_params=action_call_params.copy(),
+                    func_params=handler_params.copy(),
                 ):
-                    if is_detail:
-                        async def handler(request: Request, pk: str, **kwargs):
-                            # 每次请求创建新的 ViewSet 实例，确保无状态
-                            viewset = vs_class()
-                            # 检查限流
-                            await viewset.check_throttles(request)
-                            # 执行认证和权限检查
-                            await viewset.perform_authentication(request)
-                            await viewset.check_permissions(request, action_name)
-                            # 如果是对象级操作，获取对象并检查对象权限
+                    # 动态创建 handler 函数签名
+                    import functools
+                    
+                    async def base_handler(**kwargs):
+                        # 每次请求创建新的 ViewSet 实例，确保无状态
+                        viewset = vs_class()
+                        request = kwargs.get('request')
+                        
+                        # 检查限流
+                        await viewset.check_throttles(request)
+                        # 执行认证和权限检查
+                        await viewset.perform_authentication(request)
+                        await viewset.check_permissions(request, action_name)
+                        
+                        # 如果是对象级操作，获取对象并检查对象权限
+                        if is_detail:
+                            pk = kwargs.get('pk')
                             instance = await viewset.get_object(pk)
                             if instance:
                                 await viewset.check_object_permissions(request, instance, action_name)
-                            return await action_method(viewset, request, pk, **kwargs)
-                        return handler
-                    else:
-                        async def handler(request: Request, **kwargs):
-                            # 每次请求创建新的 ViewSet 实例，确保无状态
-                            viewset = vs_class()
-                            # 检查限流
-                            await viewset.check_throttles(request)
-                            # 执行认证和权限检查
-                            await viewset.perform_authentication(request)
-                            await viewset.check_permissions(request, action_name)
-                            return await action_method(viewset, request, **kwargs)
-                        return handler
+                        
+                        # 准备调用参数
+                        call_args = [viewset]
+                        for param_name in call_params:
+                            call_args.append(kwargs.get(param_name))
+                        
+                        return await action_method(*call_args)
+                    
+                    # 设置正确的函数签名
+                    base_handler.__signature__ = inspect.Signature(parameters=func_params)
+                    return base_handler
 
                 handler = make_handler()
                 router.add_api_route(

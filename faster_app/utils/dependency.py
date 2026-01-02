@@ -5,7 +5,6 @@
 """
 
 import ast
-import importlib.util
 import logging
 import os
 from collections import defaultdict
@@ -46,9 +45,7 @@ class DependencyAnalyzer:
         cycles = self._detect_cycles()
 
         return {
-            "dependencies": {
-                app: list(deps) for app, deps in self.dependencies.items()
-            },
+            "dependencies": {app: list(deps) for app, deps in self.dependencies.items()},
             "cycles": cycles,
             "apps": list(self.app_modules.keys()),
         }
@@ -61,12 +58,16 @@ class DependencyAnalyzer:
 
         for item in os.listdir(self.apps_dir):
             app_path = os.path.join(self.apps_dir, item)
-            if os.path.isdir(app_path) and not item.startswith("__"):
-                # 检查是否有 models.py 或 routes.py, 有则认为是应用
-                if os.path.exists(
-                    os.path.join(app_path, "models.py")
-                ) or os.path.exists(os.path.join(app_path, "routes.py")):
-                    self.app_modules[item] = app_path
+            # 检查是否有 models.py 或 routes.py, 有则认为是应用
+            if (
+                os.path.isdir(app_path)
+                and not item.startswith("__")
+                and (
+                    os.path.exists(os.path.join(app_path, "models.py"))
+                    or os.path.exists(os.path.join(app_path, "routes.py"))
+                )
+            ):
+                self.app_modules[item] = app_path
 
     def _analyze_app_dependencies(self, app_name: str, app_path: str) -> None:
         """
@@ -95,7 +96,7 @@ class DependencyAnalyzer:
             file_path: 文件路径
         """
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
 
             tree = ast.parse(content, filename=file_path)
@@ -107,11 +108,10 @@ class DependencyAnalyzer:
                         if dep_app and dep_app != app_name:
                             self.dependencies[app_name].add(dep_app)
 
-                elif isinstance(node, ast.ImportFrom):
-                    if node.module:
-                        dep_app = self._extract_app_from_import(node.module)
-                        if dep_app and dep_app != app_name:
-                            self.dependencies[app_name].add(dep_app)
+                elif isinstance(node, ast.ImportFrom) and node.module:
+                    dep_app = self._extract_app_from_import(node.module)
+                    if dep_app and dep_app != app_name:
+                        self.dependencies[app_name].add(dep_app)
 
         except Exception as e:
             logger.warning(f"分析文件依赖失败 {file_path}: {e}")
@@ -158,9 +158,7 @@ class DependencyAnalyzer:
                 cycle = path[cycle_start:] + [app]
                 # 规范化循环(从最小应用名开始)
                 if len(cycle) > 1:  # 确保循环至少有两个节点
-                    min_index = min(
-                        range(len(cycle) - 1), key=lambda i: cycle[i]
-                    )
+                    min_index = min(range(len(cycle) - 1), key=lambda i: cycle[i])
                     normalized_cycle = cycle[min_index:-1] + [cycle[min_index]]
                     # 检查是否已存在相同的循环(考虑顺序)
                     cycle_set = set(normalized_cycle)
@@ -180,7 +178,7 @@ class DependencyAnalyzer:
             rec_stack.remove(app)
 
         # 对每个应用进行 DFS
-        for app in self.dependencies.keys():
+        for app in self.dependencies:
             if app not in visited:
                 dfs(app, [])
 

@@ -31,23 +31,17 @@ class AppRegistry:
             app: 应用生命周期实例
 
         Raises:
-            ValueError: 如果应用名称重复或依赖不存在
+            ValueError: 如果应用名称重复
         """
         app_name = app.app_name
 
         if app_name in self._apps:
             raise ValueError(f"应用 {app_name} 已注册")
 
-        # 验证依赖是否存在
-        for dep in app.dependencies:
-            if dep not in self._apps and dep != app_name:
-                # 允许依赖尚未注册的应用 (可能还未发现)
-                pass
-
         self._apps[app_name] = app
         self._states[app_name] = AppState.UNINITIALIZED
 
-        # 构建依赖图
+        # 构建依赖图 (排除自依赖)
         for dep in app.dependencies:
             if dep != app_name:
                 self._dependency_graph[app_name].add(dep)
@@ -144,10 +138,12 @@ class AppRegistry:
         Args:
             timeout: 关闭超时时间 (秒)
         """
+        if not self._startup_order:
+            return
+        
         # 按启动顺序的逆序关闭
-        shutdown_order = list(reversed(self._startup_order))
-
-        for app_name in shutdown_order:
+        for app_name in reversed(self._startup_order):
+            # 只关闭已启动或就绪的应用
             if self._states[app_name] not in (AppState.READY, AppState.STARTING):
                 continue
 
@@ -193,11 +189,31 @@ class AppRegistry:
         Returns:
             应用信息列表
         """
+        # 如果还没有计算启动顺序, 使用所有已注册的应用
+        app_names = self._startup_order if self._startup_order else list(self._apps.keys())
+        
         return [
             {
                 "name": app_name,
                 "state": self._states[app_name].value,
                 "dependencies": list(self._dependency_graph[app_name]),
             }
-            for app_name in self._startup_order
+            for app_name in app_names
         ]
+    
+    def has_apps(self) -> bool:
+        """检查是否有已注册的应用
+
+        Returns:
+            如果有应用返回 True, 否则返回 False
+        """
+        return bool(self._apps)
+    
+    @property
+    def app_count(self) -> int:
+        """获取已注册的应用数量
+
+        Returns:
+            应用数量
+        """
+        return len(self._apps)

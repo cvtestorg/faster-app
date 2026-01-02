@@ -146,11 +146,34 @@ class BaseDiscover:
                         # 实例化命令类
                         instance = obj()
                         instances.append(instance)
+                    except TypeError as e:
+                        # 类型错误：可能是初始化参数不匹配
+                        logger.warning(
+                            f"Failed to instantiate {obj.__name__}: {e}. "
+                            "Check if the class requires initialization parameters."
+                        )
                     except Exception as e:
-                        logger.warning(f"Failed to instantiate {obj.__name__}: {e}")
+                        # 其他实例化错误
+                        logger.warning(
+                            f"Failed to instantiate {obj.__name__}: {type(e).__name__}: {e}"
+                        )
 
+        except ImportError as e:
+            # 导入错误：模块不存在或依赖缺失
+            logger.warning(
+                f"Failed to import module {module_name}: {e}. "
+                "Check if the module exists and all dependencies are installed."
+            )
+        except SyntaxError as e:
+            # 语法错误：代码有问题
+            logger.error(
+                f"Syntax error in {module_name} at line {e.lineno}: {e}. "
+                "Please fix the syntax error before using this module."
+            )
         except Exception as e:
-            # 静默跳过导入失败的模块, 避免阻断整个发现过程
-            logger.warning(f"Failed to import instances from {module_name}: {e}")
+            # 其他异常：记录详细信息以便调试
+            logger.warning(
+                f"Unexpected error importing instances from {module_name}: {type(e).__name__}: {e}"
+            )
 
         return instances

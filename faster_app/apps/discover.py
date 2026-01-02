@@ -34,18 +34,16 @@ class AppLifecycleDiscover(BaseDiscover):
             应用注册表实例, 包含所有已注册的应用
 
         Raises:
-            ValueError: 如果存在循环依赖或重复注册
+            ValueError: 如果重复注册
         """
         registry = AppRegistry()
-
-        # 发现所有应用生命周期实例
         instances = super().discover()
 
         if not instances:
             logger.info("未发现任何应用生命周期")
             return registry
 
-        # 先注册所有应用 (不验证依赖)
+        # 注册所有应用
         for instance in instances:
             try:
                 registry.register(instance)

@@ -87,9 +87,9 @@ handlers_config = {
 if getattr(configs, "LOG_TO_FILE", False):
     log_file_path = _get_log_file_path()
     _ensure_log_directory(log_file_path)
-    
+
     backup_count = getattr(configs, "LOG_FILE_BACKUP_COUNT", 10)  # 默认保留 10 天
-    
+
     handlers_config["file"] = {
         "()": "logging.handlers.TimedRotatingFileHandler",
         "level": configs.LOG_LEVEL.upper(),
@@ -103,10 +103,7 @@ if getattr(configs, "LOG_TO_FILE", False):
     }
 
 # 确定使用的 handlers
-if getattr(configs, "LOG_TO_FILE", False):
-    handlers_list = ["console", "file"]
-else:
-    handlers_list = ["console"]
+handlers_list = ["console", "file"] if getattr(configs, "LOG_TO_FILE", False) else ["console"]
 
 # 定义日志配置
 log_config = {

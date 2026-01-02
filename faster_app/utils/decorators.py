@@ -52,7 +52,7 @@ def with_aerich_command():
         def wrapper(self, *args, **kwargs):
             async def execute():
                 # 使用 aerich Command 作为异步上下文管理器
-                async with self.command:
+                async with self.aerich:
                     return await func(self, *args, **kwargs)
 
             return asyncio.run(execute())

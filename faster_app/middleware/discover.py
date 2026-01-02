@@ -10,6 +10,9 @@ from faster_app.settings import logger
 from faster_app.utils import BASE_DIR
 from faster_app.utils.discover import BaseDiscover
 
+# 模块导入缓存（避免重复导入）
+_module_cache: dict[str, Any] = {}
+
 
 class MiddlewareDiscover(BaseDiscover):
     """
@@ -90,8 +93,10 @@ class MiddlewareDiscover(BaseDiscover):
                     # 分离模块路径和类名
                     module_path, class_name = instance["class"].rsplit(".", 1)
 
-                    # 导入模块
-                    module = importlib.import_module(module_path)
+                    # 从缓存中获取模块，或导入并缓存
+                    if module_path not in _module_cache:
+                        _module_cache[module_path] = importlib.import_module(module_path)
+                    module = _module_cache[module_path]
 
                     # 从模块中获取类
                     instance["class"] = getattr(module, class_name)

@@ -4,8 +4,9 @@ Action 装饰器
 提供 @action 装饰器用于定义自定义操作，类似 DRF 的 @action。
 """
 
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable
+from typing import Any
 
 from fastapi import Request
 

@@ -5,21 +5,24 @@
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from fastapi import Request
+
+if TYPE_CHECKING:
+    from faster_app.viewsets.base import ViewSet
 
 
 class BaseFilterBackend(ABC):
     """
     过滤后端基类
-    
+
     所有过滤后端都应继承此类，实现过滤逻辑。
     """
 
     @abstractmethod
     async def filter_queryset(
-        self, request: Request, queryset: Any, view: Any
+        self, request: Request, queryset: Any, view: "ViewSet"
     ) -> Any:
         """
         过滤查询集
@@ -38,7 +41,7 @@ class BaseFilterBackend(ABC):
 class SearchFilter(BaseFilterBackend):
     """
     搜索过滤
-    
+
     支持在多个字段中进行搜索，类似 DRF 的 SearchFilter。
     """
 
@@ -59,7 +62,7 @@ class SearchFilter(BaseFilterBackend):
             self.search_fields = search_fields
 
     async def filter_queryset(
-        self, request: Request, queryset: Any, view: Any
+        self, request: Request, queryset: Any, view: "ViewSet"
     ) -> Any:
         """
         执行搜索过滤
@@ -113,7 +116,7 @@ class SearchFilter(BaseFilterBackend):
 class OrderingFilter(BaseFilterBackend):
     """
     排序过滤
-    
+
     支持按多个字段排序，类似 DRF 的 OrderingFilter。
     """
 
@@ -143,7 +146,7 @@ class OrderingFilter(BaseFilterBackend):
             self.ordering = ordering
 
     async def filter_queryset(
-        self, request: Request, queryset: Any, view: Any
+        self, request: Request, queryset: Any, view: "ViewSet"
     ) -> Any:
         """
         执行排序过滤
@@ -171,7 +174,7 @@ class OrderingFilter(BaseFilterBackend):
         if ordering_param:
             # 解析排序参数（支持多个字段，用逗号分隔）
             ordering_list = [field.strip() for field in ordering_param.split(",")]
-            
+
             # 验证排序字段
             valid_ordering = []
             for field in ordering_list:
@@ -183,7 +186,7 @@ class OrderingFilter(BaseFilterBackend):
                 else:
                     if not ordering_fields or field in ordering_fields:
                         valid_ordering.append(field)
-            
+
             if valid_ordering:
                 return queryset.order_by(*valid_ordering)
 
@@ -197,7 +200,7 @@ class OrderingFilter(BaseFilterBackend):
 class FieldFilter(BaseFilterBackend):
     """
     字段过滤
-    
+
     支持按字段精确匹配、范围查询等。
     """
 
@@ -212,7 +215,7 @@ class FieldFilter(BaseFilterBackend):
         self.filter_fields = filter_fields or {}
 
     async def filter_queryset(
-        self, request: Request, queryset: Any, view: Any
+        self, request: Request, queryset: Any, view: "ViewSet"
     ) -> Any:
         """
         执行字段过滤
@@ -272,7 +275,7 @@ class FieldFilter(BaseFilterBackend):
 class DjangoFilterBackend(BaseFilterBackend):
     """
     Django Filter 风格的过滤后端
-    
+
     支持类似 Django Filter 的复杂过滤条件。
     这是一个简化版本，实际使用时可以集成 django-filter 库。
     """
@@ -287,7 +290,7 @@ class DjangoFilterBackend(BaseFilterBackend):
         self.filterset_class = filterset_class
 
     async def filter_queryset(
-        self, request: Request, queryset: Any, view: Any
+        self, request: Request, queryset: Any, view: "ViewSet"
     ) -> Any:
         """
         执行 Django Filter 过滤

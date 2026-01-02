@@ -1,0 +1,41 @@
+"""
+配置 Lifespan 示例
+
+展示如何通过配置控制 lifespan 的启用与禁用。
+"""
+
+from pydantic_settings import BaseSettings
+
+
+class Settings(BaseSettings):
+    """应用配置
+    
+    Lifespan 相关配置：
+    - ENABLE_DATABASE_LIFESPAN: 是否启用数据库 lifespan (默认 True)
+    - ENABLE_APPS_LIFESPAN: 是否启用应用 lifespan (默认 True)
+    - ENABLE_USER_LIFESPANS: 是否启用用户自定义 lifespan (默认 True)
+    """
+    
+    # 项目配置
+    PROJECT_NAME: str = "My App"
+    VERSION: str = "1.0.0"
+    DEBUG: bool = False
+    
+    # Lifespan 配置
+    ENABLE_DATABASE_LIFESPAN: bool = True  # 启用数据库生命周期
+    ENABLE_APPS_LIFESPAN: bool = True  # 启用应用生命周期
+    ENABLE_USER_LIFESPANS: bool = True  # 启用用户自定义生命周期
+    
+    class Config:
+        env_file = ".env"
+        extra = "ignore"
+
+
+# 如果只需要数据库，不需要应用生命周期
+# ENABLE_APPS_LIFESPAN = False
+
+# 如果不需要数据库（例如纯 API 服务，无数据库）
+# ENABLE_DATABASE_LIFESPAN = False
+
+# 如果不想加载用户自定义 lifespan
+# ENABLE_USER_LIFESPANS = False

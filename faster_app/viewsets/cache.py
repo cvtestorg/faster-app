@@ -6,8 +6,9 @@
 
 import hashlib
 import json
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable
+from typing import Any
 
 from fastapi import Request
 
@@ -15,7 +16,7 @@ from fastapi import Request
 class SimpleCache:
     """
     简单内存缓存
-    
+
     用于缓存 ViewSet 的响应结果。
     """
 
@@ -178,7 +179,7 @@ def invalidate_cache(pattern: str | None = None, cache_instance: SimpleCache | N
 
     if pattern:
         # 删除匹配模式的键
-        keys_to_delete = [key for key in cache._cache.keys() if pattern in key]
+        keys_to_delete = [key for key in cache._cache if pattern in key]
         for key in keys_to_delete:
             cache.delete(key)
     else:

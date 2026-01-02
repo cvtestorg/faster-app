@@ -7,16 +7,14 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from fastapi import Request, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-
-from faster_app.exceptions import UnauthorizedError
+from fastapi import Request
+from fastapi.security import HTTPBearer
 
 
 class BaseAuthentication(ABC):
     """
     认证基类
-    
+
     所有认证类都应继承此类，实现认证逻辑。
     """
 
@@ -41,7 +39,7 @@ class BaseAuthentication(ABC):
 class NoAuthentication(BaseAuthentication):
     """
     不进行认证
-    
+
     所有请求都允许，不设置用户信息。
     """
 
@@ -52,7 +50,7 @@ class NoAuthentication(BaseAuthentication):
 class JWTAuthentication(BaseAuthentication):
     """
     JWT 认证
-    
+
     从 Authorization header 中提取 JWT token 并验证。
     """
 
@@ -80,6 +78,7 @@ class JWTAuthentication(BaseAuthentication):
         """
         try:
             import jwt
+
             from faster_app.settings import configs
 
             # 从 Authorization header 获取 token
@@ -114,7 +113,14 @@ class JWTAuthentication(BaseAuthentication):
 
             # 创建用户对象（简化版，实际应该从数据库查询）
             # 这里返回一个简单的用户对象，实际使用时需要根据需求调整
-            user = type("User", (), {"id": user_id, "username": payload.get("username")})()
+            user_data = {
+                "id": user_id,
+                "username": payload.get("username"),
+                "is_admin": payload.get("is_admin", False),
+                "is_superuser": payload.get("is_superuser", False),
+                "role": payload.get("role"),
+            }
+            user = type("User", (), user_data)()
 
             return (user, token)
 
@@ -128,7 +134,7 @@ class JWTAuthentication(BaseAuthentication):
 class TokenAuthentication(BaseAuthentication):
     """
     Token 认证
-    
+
     从 Authorization header 或查询参数中提取 token 并验证。
     """
 
@@ -168,15 +174,18 @@ class TokenAuthentication(BaseAuthentication):
         if not token:
             return None
 
-        # TODO: 实现 token 验证逻辑
-        # 这里需要根据实际需求实现，例如：
-        # 1. 从数据库查询 token
-        # 2. 验证 token 是否有效
+        # Token 验证逻辑需要根据实际需求实现
+        # 建议的实现方式：
+        # 1. 从数据库查询 token 记录
+        # 2. 验证 token 是否有效（未过期、未撤销等）
         # 3. 获取关联的用户信息
-
-        # 示例：返回一个简单的用户对象
-        # user = await get_user_by_token(token)
-        # if user:
+        # 4. 返回 (user, token) 元组
+        #
+        # 示例实现：
+        # from faster_app.models import Token
+        # token_obj = await Token.get_or_none(token=token, is_active=True)
+        # if token_obj and not token_obj.is_expired():
+        #     user = await token_obj.user
         #     return (user, token)
 
         return None
@@ -185,7 +194,7 @@ class TokenAuthentication(BaseAuthentication):
 class SessionAuthentication(BaseAuthentication):
     """
     Session 认证
-    
+
     从 session 中获取用户信息。
     """
 
@@ -206,8 +215,15 @@ class SessionAuthentication(BaseAuthentication):
         if hasattr(request, "session"):
             user_id = request.session.get("user_id")
             if user_id:
-                # TODO: 从数据库查询用户
-                # user = await get_user_by_id(user_id)
+                # Session 认证需要根据实际需求实现
+                # 建议的实现方式：
+                # 1. 从数据库查询用户
+                # 2. 验证用户是否仍然有效（未删除、未禁用等）
+                # 3. 返回 (user, None) 元组
+                #
+                # 示例实现：
+                # from faster_app.models import User
+                # user = await User.get_or_none(id=user_id, is_active=True)
                 # if user:
                 #     return (user, None)
                 pass

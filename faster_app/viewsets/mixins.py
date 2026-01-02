@@ -55,7 +55,26 @@ class ListModelMixin:
         # 应用过滤
         queryset = await self.filter_queryset(queryset, request)
         
-        return await apaginate(query=queryset, params=pagination)
+        # 获取分页结果
+        page = await apaginate(query=queryset, params=pagination)
+        
+        # 获取序列化器类
+        serializer_class = self.get_serializer_class("list")
+        
+        # 序列化每个对象
+        serialized_items = [
+            await serializer_class.from_orm_model(item) 
+            for item in page.items
+        ]
+        
+        # 创建新的分页结果
+        return Page(
+            items=serialized_items,
+            total=page.total,
+            page=page.page,
+            size=page.size,
+            pages=page.pages,
+        )
 
 
 class CreateModelMixin:
@@ -91,9 +110,6 @@ class CreateModelMixin:
         # 检查权限
         await self.check_permissions(request, "create")
         
-        # 获取序列化器类
-        serializer_class = self.get_serializer_class("create")
-        
         # 执行创建前钩子
         create_data = await self.perform_create_hook(create_data, request)
         
@@ -103,8 +119,9 @@ class CreateModelMixin:
         # 执行创建后钩子
         instance = await self.perform_create_after_hook(instance, request)
         
-        # 序列化并返回
-        return await serializer_class.from_tortoise_orm(instance)
+        # 序列化并返回 (使用响应 serializer)
+        serializer_class = self.get_serializer_class("retrieve")
+        return await serializer_class.from_orm_model(instance)
 
     async def perform_create(self, create_data: BaseModel) -> Model:
         """
@@ -192,7 +209,7 @@ class RetrieveModelMixin:
         await self.check_object_permissions(request, instance, "retrieve")
         
         serializer_class = self.get_serializer_class("retrieve")
-        return await serializer_class.from_tortoise_orm(instance)
+        return await serializer_class.from_orm_model(instance)
 
 
 class UpdateModelMixin:
@@ -247,9 +264,9 @@ class UpdateModelMixin:
         # 执行更新后钩子
         instance = await self.perform_update_after_hook(instance, request)
         
-        # 序列化并返回
-        serializer_class = self.get_serializer_class("update")
-        return await serializer_class.from_tortoise_orm(instance)
+        # 序列化并返回 (使用响应 serializer)
+        serializer_class = self.get_serializer_class("retrieve")
+        return await serializer_class.from_orm_model(instance)
 
     async def partial_update(
         self,

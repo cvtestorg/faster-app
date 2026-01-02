@@ -55,7 +55,7 @@ class ViewSet(ABC):
     filter_fields: dict[str, str] = {}
 
     # 限流（可选）
-    throttle_classes: list[type[BaseThrottle]] = [NoThrottle]
+    throttle_classes: list[type[BaseThrottle] | BaseThrottle] = [NoThrottle]
     throttle_scope: str | None = None
 
     # 序列化器缓存（类级别，避免重复生成）
@@ -141,12 +141,23 @@ class ViewSet(ABC):
         Returns:
             模型实例或 None
         """
-        query = self.model.get_or_none(id=pk)
-        if query is None:
-            return None
+        # 处理 UUID 类型主键
+        from uuid import UUID
+        if isinstance(pk, str):
+            try:
+                # 尝试将字符串转换为 UUID
+                pk = UUID(pk)
+            except (ValueError, AttributeError):
+                # 如果转换失败,保持原值(可能是其他类型的主键)
+                pass
+        
         if prefetch:
-            query = query.prefetch_related(*prefetch)
-        return await query
+            # 如果需要预加载关联,使用查询集方式
+            instance = await self.model.filter(id=pk).prefetch_related(*prefetch).first()
+        else:
+            # 否则直接使用 get_or_none
+            instance = await self.model.get_or_none(id=pk)
+        return instance
 
     def get_object_name(self) -> str:
         """
@@ -246,7 +257,7 @@ class ViewSet(ABC):
                 )
 
     async def check_object_permissions(
-        self, request: Request, obj: Any, action: str = ""
+        self, request: Request, obj: object, action: str = ""
     ) -> None:
         """
         检查对象级权限（可被子类重写）
@@ -309,7 +320,14 @@ class ViewSet(ABC):
         Returns:
             限流实例列表
         """
-        return [throttle() for throttle in self.throttle_classes]
+        throttles = []
+        for throttle in self.throttle_classes:
+            # 如果已经是实例,直接使用;如果是类,则实例化
+            if isinstance(throttle, BaseThrottle):
+                throttles.append(throttle)
+            else:
+                throttles.append(throttle())
+        return throttles
 
     async def check_throttles(self, request: Request) -> None:
         """

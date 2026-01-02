@@ -5,8 +5,7 @@ Lifespan 自动发现
 """
 
 import logging
-from collections.abc import AsyncGenerator
-from typing import Callable
+from collections.abc import AsyncGenerator, Callable
 
 from fastapi import FastAPI
 
@@ -32,6 +31,41 @@ class LifespanDiscover(BaseDiscover):
             "skip_files": [],
         },
     ]
+
+    def _is_lifespan_function(self, func) -> bool:
+        """检查函数是否符合 lifespan 要求
+
+        Args:
+            func: 要检查的函数
+
+        Returns:
+            是否符合 lifespan 要求
+        """
+        import inspect
+
+        from fastapi import FastAPI
+
+        try:
+            sig = inspect.signature(func)
+            params = list(sig.parameters.values())
+
+            # 必须接受一个参数
+            if len(params) != 1:
+                return False
+
+            # 参数类型必须是 FastAPI 或未注解
+            param_annotation = params[0].annotation
+            if param_annotation not in (FastAPI, inspect.Parameter.empty):
+                return False
+
+            # 返回类型必须是 AsyncGenerator 或未注解
+            return_annotation = sig.return_annotation
+            if return_annotation != inspect.Signature.empty:
+                return "AsyncGenerator" in str(return_annotation)
+
+            return True
+        except (ValueError, TypeError):
+            return False
 
     def discover(self) -> list[Callable[[FastAPI], AsyncGenerator[None, None]]]:
         """发现所有用户自定义的 lifespan 函数
@@ -68,39 +102,14 @@ class LifespanDiscover(BaseDiscover):
 
                 # 查找所有 lifespan 函数
                 for name, obj in inspect.getmembers(module):
-                    # 跳过私有函数和导入的函数
-                    if name.startswith("_"):
+                    # 跳过私有函数
+                    if name.startswith("_") or not inspect.isfunction(obj):
                         continue
 
-                    # 检查是否是函数
-                    if not inspect.isfunction(obj):
-                        continue
-
-                    # 检查是否有 @asynccontextmanager 装饰器
-                    # 或者检查函数签名是否符合 lifespan 要求
-                    try:
-                        sig = inspect.signature(obj)
-                        params = list(sig.parameters.values())
-
-                        # 必须接受一个 FastAPI 类型的参数
-                        if len(params) == 1:
-                            param_annotation = params[0].annotation
-                            # 检查类型注解是否是 FastAPI 或未注解 (Any)
-                            if (
-                                param_annotation == FastAPI
-                                or param_annotation == inspect.Parameter.empty
-                            ):
-                                # 检查返回类型是否是 AsyncGenerator
-                                return_annotation = sig.return_annotation
-                                if (
-                                    return_annotation != inspect.Signature.empty
-                                    and "AsyncGenerator" in str(return_annotation)
-                                ) or return_annotation == inspect.Signature.empty:
-                                    lifespans.append(obj)
-                                    logger.info(f"发现用户自定义 lifespan: {name}")
-                    except (ValueError, TypeError) as e:
-                        logger.debug(f"检查函数 {name} 签名失败: {e}")
-                        continue
+                    # 检查函数签名是否符合 lifespan 要求
+                    if self._is_lifespan_function(obj):
+                        lifespans.append(obj)
+                        logger.info(f"发现用户自定义 lifespan: {name}")
 
             except Exception as e:
                 logger.warning(f"加载 lifespan 文件失败 {file_path}: {e}")
