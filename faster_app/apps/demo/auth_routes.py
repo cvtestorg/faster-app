@@ -2,8 +2,8 @@
 权限和认证测试路由
 """
 
-from apps.demo.models import DemoModel
-from apps.demo.schemas import DemoCreate, DemoResponse, DemoUpdate
+from faster_app.apps.demo.models import DemoModel
+from faster_app.apps.demo.schemas import DemoCreate, DemoResponse, DemoUpdate
 from faster_app.viewsets import (
     IsAdminUser,
     IsAuthenticated,
