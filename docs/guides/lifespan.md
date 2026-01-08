@@ -6,7 +6,7 @@ Faster APP 提供了灵活的生命周期管理系统，支持数据库连接、
 
 ## 默认行为
 
-框架默认启用以下 lifespan：
+框架默认**禁用**所有 lifespan，需要显式启用：
 
 1. **database_lifespan** - 数据库连接管理 (优先级: 10)
 2. **apps_lifespan** - 应用生命周期管理 (优先级: 20)
@@ -65,7 +65,7 @@ ENABLE_USER_LIFESPANS=true
 
 ### 优先级
 
-参数 > 配置 > 默认值 (True)
+参数 > 配置 > 默认值 (False)
 
 ```python
 # 参数优先级最高，会覆盖配置

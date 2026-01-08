@@ -20,7 +20,7 @@ from faster_app.settings import configs, logger
 @lru_cache(maxsize=1)
 def _discover_user_lifespans() -> list:
     """发现用户自定义的 lifespan (带缓存)
-    
+
     Returns:
         用户自定义的 lifespan 函数列表
     """
@@ -50,9 +50,9 @@ def get_lifespan(
     关闭顺序自动逆序
 
     通过配置可以控制启用哪些 lifespan:
-    - ENABLE_DATABASE_LIFESPAN: 是否启用数据库 lifespan (默认 True)
-    - ENABLE_APPS_LIFESPAN: 是否启用应用 lifespan (默认 True)
-    - ENABLE_USER_LIFESPANS: 是否启用用户自定义 lifespan (默认 True)
+    - ENABLE_DATABASE_LIFESPAN: 是否启用数据库 lifespan (默认 False)
+    - ENABLE_APPS_LIFESPAN: 是否启用应用 lifespan (默认 False)
+    - ENABLE_USER_LIFESPANS: 是否启用用户自定义 lifespan (默认 False)
 
     Args:
         enable_database: 是否启用数据库 lifespan，None 表示从配置读取
@@ -63,30 +63,30 @@ def get_lifespan(
         组合后的 lifespan 函数
     """
     manager = LifespanManager()
-    
+
     # 注册内置 lifespan (优先级: 数据库 < 应用 < 用户自定义)
     # 参数优先级高于配置
     if enable_database is None:
-        enable_database = getattr(configs, "ENABLE_DATABASE_LIFESPAN", True)
+        enable_database = getattr(configs, "ENABLE_DATABASE_LIFESPAN", False)
     if enable_apps is None:
-        enable_apps = getattr(configs, "ENABLE_APPS_LIFESPAN", True)
+        enable_apps = getattr(configs, "ENABLE_APPS_LIFESPAN", False)
     if enable_user is None:
-        enable_user = getattr(configs, "ENABLE_USER_LIFESPANS", True)
-    
+        enable_user = getattr(configs, "ENABLE_USER_LIFESPANS", False)
+
     manager.register(
         "database",
         database_lifespan,
         enabled=enable_database,
         priority=10,
     )
-    
+
     manager.register(
         "apps",
         apps_lifespan,
         enabled=enable_apps,
         priority=20,
     )
-    
+
     # 注册用户自定义的 lifespan
     if enable_user:
         user_lifespans = _discover_user_lifespans()
@@ -98,7 +98,7 @@ def get_lifespan(
                 enabled=True,
                 priority=100 + idx,  # 用户 lifespan 优先级最低
             )
-    
+
     return manager.build()
 
 

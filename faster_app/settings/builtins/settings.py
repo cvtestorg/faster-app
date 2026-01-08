@@ -35,6 +35,11 @@ class DefaultSettings(BaseSettings):
     LOG_FILE_PATH: str = "logs/app.log"  # 日志文件路径
     LOG_FILE_BACKUP_COUNT: int = 10  # 保留的备份文件数量（按天归档时，默认保留10天）
 
+    # Lifespan 配置
+    ENABLE_DATABASE_LIFESPAN: bool = False  # 是否启用数据库 lifespan
+    ENABLE_APPS_LIFESPAN: bool = False  # 是否启用应用 lifespan
+    ENABLE_USER_LIFESPANS: bool = False  # 是否启用用户自定义 lifespan
+
     # 路由验证配置
     VALIDATE_ROUTES: bool = True  # 是否启用路由冲突检测
 

@@ -247,7 +247,7 @@ Python 项目的标准配置文件：
 ```toml
 [project]
 name = "my-app"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
     "faster-app",
 ]
