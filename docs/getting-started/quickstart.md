@@ -4,7 +4,7 @@
 
 ## 创建项目
 
-首先，让我们创建一个新项目：
+首先,让我们创建一个新项目：
 
 ```bash
 # 使用 uv 创建项目
@@ -202,7 +202,7 @@ class ArticleResponse(BaseModel):
 
 ## 测试 API
 
-路由会自动被发现并注册，无需手动配置！刷新 [http://localhost:8000/docs](http://localhost:8000/docs)，你会看到新的 API 端点。
+路由会自动被发现并注册,无需手动配置！刷新 [http://localhost:8000/docs](http://localhost:8000/docs),你会看到新的 API 端点。
 
 使用 curl 测试：
 

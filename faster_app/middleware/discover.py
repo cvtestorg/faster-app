@@ -10,7 +10,7 @@ from faster_app.settings import logger
 from faster_app.utils import BASE_DIR
 from faster_app.utils.discover import BaseDiscover
 
-# 模块导入缓存（避免重复导入）
+# 模块导入缓存(避免重复导入)
 _module_cache: dict[str, Any] = {}
 
 
@@ -80,12 +80,23 @@ class MiddlewareDiscover(BaseDiscover):
         """
         自动扫描 TARGETS 中的目录和文件,
         导出所有的实例
+
+        新增特性：
+        1. 支持优先级排序（priority 字段）
+        2. 支持动态启用/禁用（enabled 字段）
+        3. 自动过滤禁用的中间件
         """
         middlewares = []
         instances = super().discover()
         middlewares_imported = []  # 已导入的中间件, 避免重复导入
 
         for instance in instances:
+            # 检查是否启用（默认启用）
+            enabled = instance.get("enabled", True)
+            if not enabled:
+                logger.debug(f"[中间件发现] 跳过禁用的中间件: {instance.get('class', 'unknown')}")
+                continue
+
             if instance["class"] not in middlewares_imported:
                 middlewares_imported.append(instance["class"])
                 # 从字符串导入中间件类: "fastapi.middleware.cors.CORSMiddleware"
@@ -93,7 +104,7 @@ class MiddlewareDiscover(BaseDiscover):
                     # 分离模块路径和类名
                     module_path, class_name = instance["class"].rsplit(".", 1)
 
-                    # 从缓存中获取模块，或导入并缓存
+                    # 从缓存中获取模块,或导入并缓存
                     if module_path not in _module_cache:
                         _module_cache[module_path] = importlib.import_module(module_path)
                     module = _module_cache[module_path]
@@ -101,8 +112,23 @@ class MiddlewareDiscover(BaseDiscover):
                     # 从模块中获取类
                     instance["class"] = getattr(module, class_name)
 
+                    # 保留优先级信息（如果有）
+                    if "priority" not in instance:
+                        instance["priority"] = 999  # 默认优先级（最后执行）
+
                     middlewares.append(instance)
                 except (ValueError, ImportError, AttributeError) as e:
                     logger.warning(f"Failed to import class {instance['class']}: {e}")
+
+        # 按优先级排序（数字越小越先执行）
+        middlewares.sort(key=lambda x: x.get("priority", 999))
+
+        # 记录中间件加载顺序
+        if middlewares:
+            logger.debug("[中间件发现] 中间件加载顺序（按优先级）:")
+            for idx, mw in enumerate(middlewares, 1):
+                logger.debug(
+                    f"  {idx}. {mw['class'].__name__} (priority: {mw.get('priority', 999)})"
+                )
 
         return middlewares

@@ -17,9 +17,9 @@ from faster_app.settings import logger
 async def apps_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """应用生命周期管理"""
     registry = None
-    
+
     try:
-        logger.info("[生命周期] 操作: 发现应用生命周期")
+        logger.debug("[生命周期] 操作: 发现应用生命周期")
         registry = AppLifecycleDiscover().discover()
         app.state.app_registry = registry
 
@@ -28,7 +28,7 @@ async def apps_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             await registry.startup_all()
             logger.info(f"[生命周期] 操作: 启动应用 状态: 完成 数量: {registry.app_count}")
         else:
-            logger.info("[生命周期] 操作: 发现应用 状态: 未发现 动作: 跳过启动")
+            logger.debug("[生命周期] 操作: 发现应用 状态: 未发现 动作: 跳过启动")
     except Exception as e:
         logger.error(f"[生命周期] 操作: 应用启动 状态: 失败 错误: {str(e)}", exc_info=True)
         # 继续运行, 不中断整个应用
@@ -38,8 +38,8 @@ async def apps_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # 关闭所有应用
     if registry and registry.has_apps():
         try:
-            logger.info("[生命周期] 操作: 关闭应用 状态: 开始")
+            logger.debug("[生命周期] 操作: 关闭应用 状态: 开始")
             await registry.shutdown_all()
-            logger.info("[生命周期] 操作: 关闭应用 状态: 完成")
+            logger.debug("[生命周期] 操作: 关闭应用 状态: 完成")
         except Exception as e:
             logger.error(f"[生命周期] 操作: 关闭应用 状态: 失败 错误: {str(e)}", exc_info=True)

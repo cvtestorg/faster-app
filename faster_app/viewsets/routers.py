@@ -6,11 +6,14 @@ ViewSet 路由注册
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request, Security
+from fastapi.security import HTTPBearer
 from fastapi_pagination import Params
 from pydantic import BaseModel
 
+from faster_app.viewsets.authentication import JWTAuthentication
 from faster_app.viewsets.base import ViewSet
+from faster_app.viewsets.filters import FieldFilter, OrderingFilter, SearchFilter
 from faster_app.viewsets.mixins import (
     CreateModelMixin,
     DestroyModelMixin,
@@ -19,11 +22,14 @@ from faster_app.viewsets.mixins import (
     UpdateModelMixin,
 )
 
+# 模块级别的默认实例,用于避免在函数参数默认值中调用函数
+_DEFAULT_PAGINATION = Params()
+
 
 class ViewSetRouter:
     """
     ViewSet 路由注册器
-    
+
     将 ViewSet 转换为 FastAPI Router
     """
 
@@ -56,14 +62,14 @@ class ViewSetRouter:
             APIRouter 实例
 
         Note:
-            ViewSet 实例在每次请求时创建，确保无状态性和线程安全。
-            
+            ViewSet 实例在每次请求时创建,确保无状态性和线程安全。
+
             性能优化说明：
-            - ViewSet 类已经在类级别缓存了无状态组件（权限、认证、过滤后端等），
-              所以实例创建的开销主要是对象初始化，性能影响较小
-            - 如果性能成为瓶颈，可以考虑：
+            - ViewSet 类已经在类级别缓存了无状态组件(权限、认证、过滤后端等),
+              所以实例创建的开销主要是对象初始化,性能影响较小
+            - 如果性能成为瓶颈,可以考虑：
               1. 使用 FastAPI 的依赖注入系统管理 ViewSet 生命周期
-              2. 使用单例模式（仅当 ViewSet 完全无状态时，需谨慎）
+              2. 使用单例模式(仅当 ViewSet 完全无状态时,需谨慎)
               3. 添加性能测试验证当前实现是否满足需求
         """
         router = APIRouter(prefix=self.prefix, tags=self.tags)
@@ -71,10 +77,18 @@ class ViewSetRouter:
         # 创建一个临时实例用于检查类型和获取序列化器类
         temp_instance = self.viewset_class()
 
-        # 先注册自定义 action 路由（更具体的路由先注册，避免被通配路由捕获）
+        # 检查是否需要 JWT 认证(用于 Swagger UI 的 Authorize 按钮)
+        any(
+            isinstance(auth_class, type)
+            and issubclass(auth_class, JWTAuthentication)
+            or isinstance(auth_class, JWTAuthentication)
+            for auth_class in temp_instance.authentication_classes
+        )
+
+        # 先注册自定义 action 路由(更具体的路由先注册,避免被通配路由捕获)
         self._register_custom_actions(router, self.viewset_class)
 
-        # 注册标准 CRUD 路由（每次请求创建新实例）
+        # 注册标准 CRUD 路由(每次请求创建新实例)
         if "L" in self.operations and isinstance(temp_instance, ListModelMixin):
             self._register_list_route(router, self.viewset_class)
 
@@ -93,70 +107,221 @@ class ViewSetRouter:
 
         return router
 
-    def _register_list_route(
-        self, router: APIRouter, viewset_class: type[ViewSet]
-    ) -> None:
-        """注册列表路由"""
+    def _get_filter_query_params(self, viewset_instance: ViewSet) -> dict[str, Any]:
+        """
+        根据 ViewSet 的过滤配置生成查询参数
 
-        @router.get("/", response_model=Any)
-        async def list_view(request: Request, pagination: Params = Depends()):
-            # 每次请求创建新的 ViewSet 实例，确保无状态性和线程安全
-            # ViewSet 类已经缓存了无状态组件（权限、认证、过滤后端等），
-            # 所以实例创建的开销主要是对象初始化，性能影响较小
+        Args:
+            viewset_instance: ViewSet 实例
+
+        Returns:
+            查询参数字典,用于 FastAPI 路由
+        """
+        query_params = {}
+        filter_backends = getattr(viewset_instance, "filter_backends", [])
+
+        for backend in filter_backends:
+            # 如果 backend 是类,需要实例化以获取属性
+            backend_instance = backend() if isinstance(backend, type) else backend
+
+            # 处理 SearchFilter
+            if isinstance(backend_instance, SearchFilter) or (
+                isinstance(backend, type) and issubclass(backend, SearchFilter)
+            ):
+                search_fields = getattr(viewset_instance, "search_fields", [])
+                if search_fields:
+                    search_param = backend_instance.search_param
+                    query_params[search_param] = Query(
+                        None,
+                        description=f"搜索关键词,将在以下字段中搜索: {', '.join(search_fields)}",
+                    )
+
+            # 处理 OrderingFilter
+            if isinstance(backend_instance, OrderingFilter) or (
+                isinstance(backend, type) and issubclass(backend, OrderingFilter)
+            ):
+                ordering_fields = getattr(viewset_instance, "ordering_fields", [])
+                if ordering_fields:
+                    ordering_param = backend_instance.ordering_param
+                    query_params[ordering_param] = Query(
+                        None,
+                        description=f"排序字段,支持: {', '.join(ordering_fields)}。使用 - 前缀表示降序,例如: -created_at",
+                    )
+
+            # 处理 FieldFilter
+            if isinstance(backend_instance, FieldFilter) or (
+                isinstance(backend, type) and issubclass(backend, FieldFilter)
+            ):
+                filter_fields = getattr(viewset_instance, "filter_fields", {})
+                if filter_fields:
+                    for field_name, filter_type in filter_fields.items():
+                        # 根据过滤类型生成描述
+                        type_descriptions = {
+                            "exact": "精确匹配",
+                            "icontains": "包含匹配(不区分大小写)",
+                            "gt": "大于",
+                            "gte": "大于等于",
+                            "lt": "小于",
+                            "lte": "小于等于",
+                            "in": "在列表中(逗号分隔)",
+                            "isnull": "是否为空(true/false)",
+                        }
+                        description = type_descriptions.get(filter_type, f"过滤类型: {filter_type}")
+                        query_params[field_name] = Query(
+                            None, description=f"{field_name}: {description}"
+                        )
+
+        return query_params
+
+    def _register_list_route(self, router: APIRouter, viewset_class: type[ViewSet]) -> None:
+        """注册列表路由"""
+        temp_instance = viewset_class()
+        needs_auth = any(
+            isinstance(auth_class, type)
+            and issubclass(auth_class, JWTAuthentication)
+            or isinstance(auth_class, JWTAuthentication)
+            for auth_class in temp_instance.authentication_classes
+        )
+        # 设置 auto_error=False,让我们的认证逻辑完全控制认证流程
+        security = [Security(HTTPBearer(auto_error=False))] if needs_auth else None
+
+        # 获取过滤查询参数配置
+        filter_params = self._get_filter_query_params(temp_instance)
+
+        # 构建函数参数：request, pagination, 以及所有过滤参数
+        # 使用 functools.partial 或者直接构建函数签名
+        import inspect
+        from functools import wraps
+
+        # 创建基础函数
+        # 使用 Depends() 让 FastAPI 自动注入 Params 实例
+        async def base_list_view(request: Request, pagination: Params = Depends()):  # noqa: B008
             viewset = viewset_class()
             return await viewset.list(request, pagination)
 
-    def _get_serializer_class(
-        self, viewset_class: type[ViewSet], serializer_type: str = "create"
+        # 如果有过滤参数,需要动态添加
+        if filter_params:
+            # 构建新的函数签名
+            sig = inspect.signature(base_list_view)
+            params = list(sig.parameters.values())
+
+            # 添加过滤查询参数
+            for param_name, query_default in filter_params.items():
+                params.append(
+                    inspect.Parameter(
+                        param_name,
+                        inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                        default=query_default,
+                        annotation=str | None,
+                    )
+                )
+
+            # 创建包装函数
+            @wraps(base_list_view)
+            async def list_view(*args, **kwargs):
+                # 提取 request 和 pagination,忽略过滤参数(ViewSet 会从 request.query_params 读取)
+                request_arg = None
+                pagination_arg = Params()
+
+                # 从位置参数中查找
+                for arg in args:
+                    if isinstance(arg, Request):
+                        request_arg = arg
+                    elif isinstance(arg, Params):
+                        pagination_arg = arg
+
+                # 从关键字参数中查找
+                if not request_arg and "request" in kwargs:
+                    request_arg = kwargs["request"]
+                if "pagination" in kwargs:
+                    pagination_arg = kwargs["pagination"]
+
+                if request_arg:
+                    viewset = viewset_class()
+                    return await viewset.list(request_arg, pagination_arg)
+
+                # 回退到原始调用
+                return await base_list_view(*args, **kwargs)
+
+            list_view.__signature__ = inspect.Signature(params)
+        else:
+            list_view = base_list_view
+
+        # 直接注册 list_view,保持其函数签名
+        router.get("/", dependencies=security)(list_view)
+
+    def _get_schema(
+        self, viewset_class: type[ViewSet], schema_type: str = "create"
     ) -> type[BaseModel]:
         """
-        获取序列化器类
+        获取 Schema 类
 
         Args:
             viewset_class: ViewSet 类
-            serializer_type: 序列化器类型 ('create' 或 'update')
+            schema_type: Schema 类型 ('create' 或 'update')
 
         Returns:
-            序列化器类
+            Schema 类
         """
         temp_instance = viewset_class()
-        if serializer_type == "create":
-            return temp_instance.create_serializer_class or temp_instance.serializer_class
+        if schema_type == "create":
+            return temp_instance.create_schema or temp_instance.schema
         else:  # update
-            return temp_instance.update_serializer_class or temp_instance.serializer_class
+            return temp_instance.update_schema or temp_instance.schema
 
-    def _register_create_route(
-        self, router: APIRouter, viewset_class: type[ViewSet]
-    ) -> None:
+    def _register_create_route(self, router: APIRouter, viewset_class: type[ViewSet]) -> None:
         """注册创建路由"""
-        serializer_class = self._get_serializer_class(viewset_class, "create")
+        schema = self._get_schema(viewset_class, "create")
+        temp_instance = viewset_class()
+        needs_auth = any(
+            isinstance(auth_class, type)
+            and issubclass(auth_class, JWTAuthentication)
+            or isinstance(auth_class, JWTAuthentication)
+            for auth_class in temp_instance.authentication_classes
+        )
+        # 设置 auto_error=False,让我们的认证逻辑完全控制认证流程
+        security = [Security(HTTPBearer(auto_error=False))] if needs_auth else None
 
-        @router.post("/", response_model=Any)
-        async def create_view(request: Request, create_data: serializer_class):
-            # 每次请求创建新的 ViewSet 实例，确保无状态
+        @router.post("/", dependencies=security)
+        async def create_view(request: Request, create_data: schema):
+            # 每次请求创建新的 ViewSet 实例,确保无状态
             viewset = viewset_class()
             return await viewset.create(request, create_data)
 
-    def _register_retrieve_route(
-        self, router: APIRouter, viewset_class: type[ViewSet]
-    ) -> None:
+    def _register_retrieve_route(self, router: APIRouter, viewset_class: type[ViewSet]) -> None:
         """注册单个查询路由"""
+        temp_instance = viewset_class()
+        needs_auth = any(
+            isinstance(auth_class, type)
+            and issubclass(auth_class, JWTAuthentication)
+            or isinstance(auth_class, JWTAuthentication)
+            for auth_class in temp_instance.authentication_classes
+        )
+        # 设置 auto_error=False,让我们的认证逻辑完全控制认证流程
+        security = [Security(HTTPBearer(auto_error=False))] if needs_auth else None
 
-        @router.get("/{pk}", response_model=Any)
+        @router.get("/{pk}", dependencies=security)
         async def retrieve_view(request: Request, pk: str):
-            # 每次请求创建新的 ViewSet 实例，确保无状态
+            # 每次请求创建新的 ViewSet 实例,确保无状态
             viewset = viewset_class()
             return await viewset.retrieve(request, pk)
 
-    def _register_update_route(
-        self, router: APIRouter, viewset_class: type[ViewSet]
-    ) -> None:
+    def _register_update_route(self, router: APIRouter, viewset_class: type[ViewSet]) -> None:
         """注册完整更新路由"""
-        serializer_class = self._get_serializer_class(viewset_class, "update")
+        schema = self._get_schema(viewset_class, "update")
+        temp_instance = viewset_class()
+        needs_auth = any(
+            isinstance(auth_class, type)
+            and issubclass(auth_class, JWTAuthentication)
+            or isinstance(auth_class, JWTAuthentication)
+            for auth_class in temp_instance.authentication_classes
+        )
+        # 设置 auto_error=False,让我们的认证逻辑完全控制认证流程
+        security = [Security(HTTPBearer(auto_error=False))] if needs_auth else None
 
-        @router.put("/{pk}", response_model=Any)
-        async def update_view(request: Request, pk: str, update_data: serializer_class):
-            # 每次请求创建新的 ViewSet 实例，确保无状态
+        @router.put("/{pk}", dependencies=security)
+        async def update_view(request: Request, pk: str, update_data: schema):
+            # 每次请求创建新的 ViewSet 实例,确保无状态
             viewset = viewset_class()
             return await viewset.update(request, pk, update_data)
 
@@ -164,38 +329,50 @@ class ViewSetRouter:
         self, router: APIRouter, viewset_class: type[ViewSet]
     ) -> None:
         """注册部分更新路由"""
-        serializer_class = self._get_serializer_class(viewset_class, "update")
+        schema = self._get_schema(viewset_class, "update")
+        temp_instance = viewset_class()
+        needs_auth = any(
+            isinstance(auth_class, type)
+            and issubclass(auth_class, JWTAuthentication)
+            or isinstance(auth_class, JWTAuthentication)
+            for auth_class in temp_instance.authentication_classes
+        )
+        # 设置 auto_error=False,让我们的认证逻辑完全控制认证流程
+        security = [Security(HTTPBearer(auto_error=False))] if needs_auth else None
 
-        @router.patch("/{pk}", response_model=Any)
-        async def partial_update_view(
-            request: Request, pk: str, update_data: serializer_class
-        ):
-            # 每次请求创建新的 ViewSet 实例，确保无状态
+        @router.patch("/{pk}", dependencies=security)
+        async def partial_update_view(request: Request, pk: str, update_data: schema):
+            # 每次请求创建新的 ViewSet 实例,确保无状态
             viewset = viewset_class()
             return await viewset.partial_update(request, pk, update_data)
 
-    def _register_destroy_route(
-        self, router: APIRouter, viewset_class: type[ViewSet]
-    ) -> None:
+    def _register_destroy_route(self, router: APIRouter, viewset_class: type[ViewSet]) -> None:
         """注册删除路由"""
+        temp_instance = viewset_class()
+        needs_auth = any(
+            isinstance(auth_class, type)
+            and issubclass(auth_class, JWTAuthentication)
+            or isinstance(auth_class, JWTAuthentication)
+            for auth_class in temp_instance.authentication_classes
+        )
+        # 设置 auto_error=False,让我们的认证逻辑完全控制认证流程
+        security = [Security(HTTPBearer(auto_error=False))] if needs_auth else None
 
-        @router.delete("/{pk}")
+        @router.delete("/{pk}", dependencies=security)
         async def destroy_view(request: Request, pk: str):
-            # 每次请求创建新的 ViewSet 实例，确保无状态
+            # 每次请求创建新的 ViewSet 实例,确保无状态
             viewset = viewset_class()
             return await viewset.destroy(request, pk)
 
-    def _register_custom_actions(
-        self, router: APIRouter, viewset_class: type[ViewSet]
-    ) -> None:
+    def _register_custom_actions(self, router: APIRouter, viewset_class: type[ViewSet]) -> None:
         """注册自定义 action 路由"""
-        # 获取 ViewSet 类的方法（不是实例方法）
+        # 获取 ViewSet 类的方法(不是实例方法)
         for attr_name in dir(viewset_class):
             # 跳过私有方法和特殊方法
             if attr_name.startswith("_") or attr_name in [
                 "get_queryset",
                 "get_object",
-                "get_serializer_class",
+                "get_schema",
                 "get_object_name",
                 "list",
                 "create",
@@ -216,28 +393,24 @@ class ViewSetRouter:
             action_kwargs = getattr(attr, "action_kwargs", {})
 
             # 构建路由路径
-            if detail:
-                route_path = f"/{{pk}}/{url_path}"
-            else:
-                route_path = f"/{url_path}"
+            route_path = f"/{{pk}}/{url_path}" if detail else f"/{url_path}"
 
             # 为每个方法创建独立的处理函数
             # 使用默认参数来避免闭包问题
             for method in methods:
                 # 检查 action 方法的签名
                 import inspect
-                from typing import get_type_hints
-                
+
                 sig = inspect.signature(attr)
-                # 获取原始方法的参数（不包括 self）
+                # 获取原始方法的参数(不包括 self)
                 original_params = list(sig.parameters.values())[1:]  # 跳过 self
-                
-                # 创建新的参数列表（用于 handler 函数）
+
+                # 创建新的参数列表(用于 handler 函数)
                 handler_params = []
                 action_call_params = []
-                
+
                 for param in original_params:
-                    if param.name in ('request', 'pk'):
+                    if param.name in ("request", "pk"):
                         # request 和 pk 是固定参数
                         handler_params.append(param)
                         action_call_params.append(param.name)
@@ -245,54 +418,78 @@ class ViewSetRouter:
                         # 其他参数需要传递给 action
                         handler_params.append(param)
                         action_call_params.append(param.name)
-                
+
                 # 使用默认参数来捕获当前循环的值
+                # 在外层先复制,避免在默认参数中调用函数
+                captured_call_params = action_call_params.copy()
+                captured_func_params = handler_params.copy()
+
                 def make_handler(
                     action_method=attr,
                     is_detail=detail,
                     vs_class=viewset_class,
                     action_name=attr_name,
-                    call_params=action_call_params.copy(),
-                    func_params=handler_params.copy(),
+                    call_params=captured_call_params,
+                    func_params=captured_func_params,
                 ):
-                    # 动态创建 handler 函数签名
-                    import functools
-                    
                     async def base_handler(**kwargs):
-                        # 每次请求创建新的 ViewSet 实例，确保无状态
+                        # 每次请求创建新的 ViewSet 实例,确保无状态
                         viewset = vs_class()
-                        request = kwargs.get('request')
-                        
+                        request = kwargs.get("request")
+
                         # 检查限流
                         await viewset.check_throttles(request)
                         # 执行认证和权限检查
                         await viewset.perform_authentication(request)
                         await viewset.check_permissions(request, action_name)
-                        
-                        # 如果是对象级操作，获取对象并检查对象权限
+
+                        # 如果是对象级操作,获取对象并检查对象权限
                         if is_detail:
-                            pk = kwargs.get('pk')
+                            pk = kwargs.get("pk")
                             instance = await viewset.get_object(pk)
                             if instance:
-                                await viewset.check_object_permissions(request, instance, action_name)
-                        
+                                await viewset.check_object_permissions(
+                                    request, instance, action_name
+                                )
+
                         # 准备调用参数
                         call_args = [viewset]
                         for param_name in call_params:
                             call_args.append(kwargs.get(param_name))
-                        
+
                         return await action_method(*call_args)
-                    
+
                     # 设置正确的函数签名
                     base_handler.__signature__ = inspect.Signature(parameters=func_params)
                     return base_handler
 
                 handler = make_handler()
+
+                # 检查是否需要 JWT 认证(用于 Swagger UI 的 Authorize 按钮)
+                # 设置 auto_error=False,让我们的认证逻辑完全控制认证流程
+                temp_instance = viewset_class()
+                needs_auth = any(
+                    isinstance(auth_class, type)
+                    and issubclass(auth_class, JWTAuthentication)
+                    or isinstance(auth_class, JWTAuthentication)
+                    for auth_class in temp_instance.authentication_classes
+                )
+                security = [Security(HTTPBearer(auto_error=False))] if needs_auth else None
+
+                # 合并安全依赖到 action_kwargs
+                route_kwargs = action_kwargs.copy()
+                if security:
+                    existing_deps = route_kwargs.get("dependencies", [])
+                    if isinstance(existing_deps, list):
+                        route_kwargs["dependencies"] = existing_deps + security
+                    else:
+                        route_kwargs["dependencies"] = security
+
                 router.add_api_route(
                     route_path,
                     handler,
                     methods=[method],
-                    **action_kwargs,
+                    **route_kwargs,
                 )
 
 

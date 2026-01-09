@@ -1,7 +1,7 @@
 """
 过滤系统
 
-提供灵活的查询过滤功能，支持搜索、排序、字段过滤等。
+提供灵活的查询过滤功能,支持搜索、排序、字段过滤等。
 """
 
 from abc import ABC, abstractmethod
@@ -17,13 +17,11 @@ class BaseFilterBackend(ABC):
     """
     过滤后端基类
 
-    所有过滤后端都应继承此类，实现过滤逻辑。
+    所有过滤后端都应继承此类,实现过滤逻辑。
     """
 
     @abstractmethod
-    async def filter_queryset(
-        self, request: Request, queryset: Any, view: "ViewSet"
-    ) -> Any:
+    async def filter_queryset(self, request: Request, queryset: Any, view: "ViewSet") -> Any:
         """
         过滤查询集
 
@@ -42,7 +40,7 @@ class SearchFilter(BaseFilterBackend):
     """
     搜索过滤
 
-    支持在多个字段中进行搜索，类似 DRF 的 SearchFilter。
+    支持在多个字段中进行搜索,类似 DRF 的 SearchFilter。
     """
 
     search_param = "search"
@@ -53,17 +51,15 @@ class SearchFilter(BaseFilterBackend):
         初始化搜索过滤
 
         Args:
-            search_param: 搜索参数名，默认 "search"
-            search_fields: 搜索字段列表，如果为 None 则从 view.search_fields 获取
+            search_param: 搜索参数名,默认 "search"
+            search_fields: 搜索字段列表,如果为 None 则从 view.search_fields 获取
         """
         if search_param is not None:
             self.search_param = search_param
         if search_fields is not None:
             self.search_fields = search_fields
 
-    async def filter_queryset(
-        self, request: Request, queryset: Any, view: "ViewSet"
-    ) -> Any:
+    async def filter_queryset(self, request: Request, queryset: Any, view: "ViewSet") -> Any:
         """
         执行搜索过滤
 
@@ -87,13 +83,13 @@ class SearchFilter(BaseFilterBackend):
         if not search_fields:
             return queryset
 
-        # 构建搜索条件（使用 OR 连接）
+        # 构建搜索条件(使用 OR 连接)
         # Tortoise ORM 使用 Q 对象进行复杂查询
         from tortoise.expressions import Q
 
         search_conditions = Q()
         for field in search_fields:
-            # 支持字段前缀：^ 表示精确匹配，= 表示相等，@ 表示全文搜索
+            # 支持字段前缀：^ 表示精确匹配,= 表示相等,@ 表示全文搜索
             if field.startswith("^"):
                 # 精确匹配
                 field_name = field[1:]
@@ -103,11 +99,11 @@ class SearchFilter(BaseFilterBackend):
                 field_name = field[1:]
                 search_conditions |= Q(**{f"{field_name}__exact": search_term})
             elif field.startswith("@"):
-                # 全文搜索（需要数据库支持）
+                # 全文搜索(需要数据库支持)
                 field_name = field[1:]
                 search_conditions |= Q(**{f"{field_name}__icontains": search_term})
             else:
-                # 默认：包含匹配（不区分大小写）
+                # 默认：包含匹配(不区分大小写)
                 search_conditions |= Q(**{f"{field}__icontains": search_term})
 
         return queryset.filter(search_conditions)
@@ -117,7 +113,7 @@ class OrderingFilter(BaseFilterBackend):
     """
     排序过滤
 
-    支持按多个字段排序，类似 DRF 的 OrderingFilter。
+    支持按多个字段排序,类似 DRF 的 OrderingFilter。
     """
 
     ordering_param = "ordering"
@@ -134,9 +130,9 @@ class OrderingFilter(BaseFilterBackend):
         初始化排序过滤
 
         Args:
-            ordering_param: 排序参数名，默认 "ordering"
-            ordering_fields: 允许排序的字段列表，如果为 None 则从 view.ordering_fields 获取
-            ordering: 默认排序字段列表，如果为 None 则从 view.ordering 获取
+            ordering_param: 排序参数名,默认 "ordering"
+            ordering_fields: 允许排序的字段列表,如果为 None 则从 view.ordering_fields 获取
+            ordering: 默认排序字段列表,如果为 None 则从 view.ordering 获取
         """
         if ordering_param is not None:
             self.ordering_param = ordering_param
@@ -145,9 +141,7 @@ class OrderingFilter(BaseFilterBackend):
         if ordering is not None:
             self.ordering = ordering
 
-    async def filter_queryset(
-        self, request: Request, queryset: Any, view: "ViewSet"
-    ) -> Any:
+    async def filter_queryset(self, request: Request, queryset: Any, view: "ViewSet") -> Any:
         """
         执行排序过滤
 
@@ -172,13 +166,13 @@ class OrderingFilter(BaseFilterBackend):
         # 从请求参数获取排序
         ordering_param = request.query_params.get(self.ordering_param)
         if ordering_param:
-            # 解析排序参数（支持多个字段，用逗号分隔）
+            # 解析排序参数(支持多个字段,用逗号分隔)
             ordering_list = [field.strip() for field in ordering_param.split(",")]
 
             # 验证排序字段
             valid_ordering = []
             for field in ordering_list:
-                # 处理降序（- 前缀）
+                # 处理降序(- 前缀)
                 if field.startswith("-"):
                     field_name = field[1:]
                     if not ordering_fields or field_name in ordering_fields:
@@ -209,14 +203,12 @@ class FieldFilter(BaseFilterBackend):
         初始化字段过滤
 
         Args:
-            filter_fields: 字段过滤配置，格式：{"字段名": "查询类型"}
+            filter_fields: 字段过滤配置,格式：{"字段名": "查询类型"}
                 查询类型支持：exact, icontains, gt, gte, lt, lte, in, isnull
         """
         self.filter_fields = filter_fields or {}
 
-    async def filter_queryset(
-        self, request: Request, queryset: Any, view: "ViewSet"
-    ) -> Any:
+    async def filter_queryset(self, request: Request, queryset: Any, view: "ViewSet") -> Any:
         """
         执行字段过滤
 
@@ -277,7 +269,7 @@ class DjangoFilterBackend(BaseFilterBackend):
     Django Filter 风格的过滤后端
 
     支持类似 Django Filter 的复杂过滤条件。
-    这是一个简化版本，实际使用时可以集成 django-filter 库。
+    这是一个简化版本,实际使用时可以集成 django-filter 库。
     """
 
     def __init__(self, filterset_class: Any = None):
@@ -285,13 +277,11 @@ class DjangoFilterBackend(BaseFilterBackend):
         初始化 Django Filter 后端
 
         Args:
-            filterset_class: FilterSet 类（可选，如果使用 django-filter）
+            filterset_class: FilterSet 类(可选,如果使用 django-filter)
         """
         self.filterset_class = filterset_class
 
-    async def filter_queryset(
-        self, request: Request, queryset: Any, view: "ViewSet"
-    ) -> Any:
+    async def filter_queryset(self, request: Request, queryset: Any, view: "ViewSet") -> Any:
         """
         执行 Django Filter 过滤
 
@@ -304,9 +294,9 @@ class DjangoFilterBackend(BaseFilterBackend):
             过滤后的查询集
 
         Note:
-            这是一个简化实现，实际使用时可以集成 django-filter 库
+            这是一个简化实现,实际使用时可以集成 django-filter 库
         """
-        # 如果提供了 filterset_class，使用它
+        # 如果提供了 filterset_class,使用它
         if self.filterset_class:
             # TODO: 集成 django-filter
             # from django_filters import rest_framework as filters

@@ -29,6 +29,8 @@ from faster_app.utils.response import ApiResponse
 from faster_app.viewsets import (
     AnonRateThrottle,
     FieldFilter,
+    IsAuthenticated,
+    JWTAuthentication,
     ModelViewSet,
     OrderingFilter,
     SearchFilter,
@@ -52,13 +54,13 @@ class DemoViewSet(ModelViewSet):
     """
 
     model = DemoModel
-    serializer_class = DemoResponse
-    create_serializer_class = DemoCreate
-    update_serializer_class = DemoUpdate
+    schema = DemoResponse
+    create_schema = DemoCreate
+    update_schema = DemoUpdate
 
     # 认证和权限 (可选,默认允许所有)
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     # 过滤和排序
     filter_backends = [SearchFilter, OrderingFilter, FieldFilter]
@@ -71,6 +73,7 @@ class DemoViewSet(ModelViewSet):
     }
 
     # 限流 (可选,默认不限流)
+    # 使用默认配置：user=100/hour, anon=20/hour
     throttle_classes = [UserRateThrottle(), AnonRateThrottle()]
 
     def get_queryset(self):
@@ -113,7 +116,7 @@ class DemoViewSet(ModelViewSet):
         logger.info(f"[删除后] 已删除记录: {instance.id}")
 
     # 自定义 Action 示例
-    @action(detail=False, methods=["GET"], response_model=DemoStatistics)
+    @action(detail=False, methods=["GET"])
     async def statistics(self, request: Request):
         """
         统计信息 - 列表级别的 action
@@ -129,10 +132,15 @@ class DemoViewSet(ModelViewSet):
         active = await queryset.filter(status=1).count()
         inactive = total - active
 
-        return DemoStatistics(
+        statistics_data = DemoStatistics(
             total=total,
             active=active,
             inactive=inactive,
+        )
+
+        return ApiResponse.success(
+            data=statistics_data.model_dump(mode="json"),
+            message="统计信息查询成功",
         )
 
     @action(detail=True, methods=["POST"])
@@ -147,7 +155,12 @@ class DemoViewSet(ModelViewSet):
             raise NotFoundError(message="记录不存在", data={"pk": pk})
         instance.status = 1
         await instance.save()
-        return await DemoResponse.from_orm_model(instance)
+
+        serialized_data = await DemoResponse.from_orm_model(instance)
+        return ApiResponse.success(
+            data=serialized_data.model_dump(mode="json"),
+            message="激活成功",
+        )
 
     @action(detail=True, methods=["POST"])
     async def deactivate(self, request: Request, pk: str):
@@ -161,7 +174,12 @@ class DemoViewSet(ModelViewSet):
             raise NotFoundError(message="记录不存在", data={"pk": pk})
         instance.status = 0
         await instance.save()
-        return await DemoResponse.from_orm_model(instance)
+
+        serialized_data = await DemoResponse.from_orm_model(instance)
+        return ApiResponse.success(
+            data=serialized_data.model_dump(mode="json"),
+            message="停用成功",
+        )
 
     @action(detail=False, methods=["POST"])
     async def batch_create(self, request: Request, items_data: list[DemoCreate]):

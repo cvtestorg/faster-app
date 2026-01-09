@@ -1,7 +1,7 @@
 """
 ViewSet 模块 - 类似 Django REST Framework 的 ViewSet 实现
 
-提供 ViewSet 基类、Mixin 类和常用 ViewSet，用于快速构建 RESTful API。
+提供 ViewSet 基类、Mixin 类和常用 ViewSet,用于快速构建 RESTful API。
 """
 
 from faster_app.viewsets.actions import action
@@ -39,6 +39,7 @@ from faster_app.viewsets.routers import as_router
 from faster_app.viewsets.throttling import (
     AnonRateThrottle,
     BaseThrottle,
+    MultiRateThrottle,
     NoThrottle,
     ScopedRateThrottle,
     SimpleRateThrottle,
@@ -84,6 +85,7 @@ __all__ = [
     "UserRateThrottle",
     "AnonRateThrottle",
     "ScopedRateThrottle",
+    "MultiRateThrottle",
     # 装饰器和工具
     "action",
     "as_router",

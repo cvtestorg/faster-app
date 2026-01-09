@@ -25,7 +25,6 @@ class RoutesDiscover(BaseDiscover):
             "skip_dirs": ["__pycache__"],
             "skip_files": [],
         },
-        # 默认不加载内置路由样例, 开发环境反注释代码进行调试
         # {
         #     "directory": f"{BASE_DIR}/apps",
         #     "filename": None,
@@ -118,7 +117,7 @@ class RoutesDiscover(BaseDiscover):
 
             # 记录路由摘要
             summary = validator.get_summary()
-            logger.info(
+            logger.debug(
                 f"路由发现完成: 共 {summary['total_routes']} 个路由, "
                 f"{summary['unique_paths']} 个唯一路径"
             )

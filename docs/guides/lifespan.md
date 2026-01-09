@@ -2,17 +2,17 @@
 
 ## 概述
 
-Faster APP 提供了灵活的生命周期管理系统，支持数据库连接、应用初始化和用户自定义生命周期的统一管理。
+Faster APP 提供了灵活的生命周期管理系统,支持数据库连接、应用初始化和用户自定义生命周期的统一管理。
 
 ## 默认行为
 
-框架默认**禁用**所有 lifespan，需要显式启用：
+框架默认**禁用**所有 lifespan,需要显式启用：
 
 1. **database_lifespan** - 数据库连接管理 (优先级: 10)
 2. **apps_lifespan** - 应用生命周期管理 (优先级: 20)
 3. **用户自定义 lifespan** - 从 `config/lifespan.py` 自动发现 (优先级: 100+)
 
-启动顺序由优先级决定（数字越小越先执行），关闭顺序自动逆序。
+启动顺序由优先级决定(数字越小越先执行),关闭顺序自动逆序。
 
 ## 控制 Lifespan
 
@@ -45,10 +45,10 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     # 禁用数据库 lifespan (适用于无数据库的 API 服务)
     ENABLE_DATABASE_LIFESPAN: bool = False
-    
+
     # 禁用应用 lifespan (如果不使用应用生命周期管理)
     ENABLE_APPS_LIFESPAN: bool = False
-    
+
     # 禁用用户自定义 lifespan
     ENABLE_USER_LIFESPANS: bool = False
 ```
@@ -68,8 +68,8 @@ ENABLE_USER_LIFESPANS=true
 参数 > 配置 > 默认值 (False)
 
 ```python
-# 参数优先级最高，会覆盖配置
-lifespan = get_lifespan(enable_database=False)  # 禁用数据库，即使配置中启用
+# 参数优先级最高,会覆盖配置
+lifespan = get_lifespan(enable_database=False)  # 禁用数据库,即使配置中启用
 ```
 
 ## 用户自定义 Lifespan
@@ -92,9 +92,9 @@ async def cache_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     print("Connecting to Redis...")
     # redis_client = await connect_redis()
     # app.state.redis = redis_client
-    
+
     yield
-    
+
     # 关闭时
     print("Disconnecting from Redis...")
     # await redis_client.close()
@@ -114,7 +114,7 @@ async def mq_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 ### 使用 LifespanManager
 
-对于复杂场景，可以使用 `LifespanManager` 进行精细控制：
+对于复杂场景,可以使用 `LifespanManager` 进行精细控制：
 
 ```python
 from faster_app.lifespan import LifespanManager, database_lifespan, apps_lifespan
@@ -123,20 +123,20 @@ from faster_app.lifespan import LifespanManager, database_lifespan, apps_lifespa
 def create_custom_lifespan():
     """创建自定义 lifespan 配置"""
     manager = LifespanManager()
-    
+
     # 注册内置 lifespan
     manager.register("database", database_lifespan, enabled=True, priority=10)
     manager.register("apps", apps_lifespan, enabled=True, priority=20)
-    
+
     # 注册自定义 lifespan
     manager.register("cache", cache_lifespan, enabled=True, priority=30)
     manager.register("mq", mq_lifespan, enabled=False, priority=40)
-    
+
     # 动态控制
     import os
     if os.getenv("ENABLE_MQ") == "true":
         manager.enable("mq")
-    
+
     return manager.build()
 
 
@@ -158,7 +158,7 @@ manager.register(
     name="cache",           # 唯一名称
     lifespan=cache_func,    # lifespan 函数
     enabled=True,           # 是否启用
-    priority=30,            # 优先级（越小越先执行）
+    priority=30,            # 优先级(越小越先执行)
 )
 
 # 启用/禁用
@@ -233,7 +233,7 @@ async def safe_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         yield
     except Exception as e:
         logger.error(f"Setup failed: {e}")
-        yield  # 继续运行，不中断应用
+        yield  # 继续运行,不中断应用
     finally:
         try:
             await cleanup_service()
@@ -264,6 +264,7 @@ async def get_data(request: Request):
 ## 完整示例
 
 参见：
+
 - `docs/examples/config_settings_lifespan.py.example` - 配置示例
 - `docs/examples/custom_lifespan_advanced.py.example` - 高级定制示例
 - `docs/examples/config_lifespan.py.example` - 用户自定义 lifespan 示例

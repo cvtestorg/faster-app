@@ -34,8 +34,17 @@ class DBOperations(BaseCommand):
     @with_aerich_command()
     async def init_db(self) -> None:
         """🛠️ 初始化数据库架构 - 生成数据库表结构和应用迁移目录"""
-        await self.aerich.init_db(safe=True)
-        console.print("[bold green]✅ 数据库初始化成功[/bold green]")
+        try:
+            await self.aerich.init_db(safe=True)
+            console.print("[bold green]✅ 数据库初始化成功[/bold green]")
+        except FileExistsError:
+            console.print("[bold yellow]⚠️  迁移文件已存在, 数据库可能已经初始化过[/bold yellow]")
+            console.print(
+                "[dim]💡 提示:[/dim] 如果数据库表还未创建, 请使用 [bold]faster db upgrade[/bold] 应用迁移"
+            )
+            console.print(
+                "[dim]💡 提示:[/dim] 如果需要重新初始化, 请先使用 [bold]faster db clean[/bold] 清理迁移文件"
+            )
 
     @with_aerich_command()
     async def migrate(self, name: str | None = None, empty: bool = False) -> None:
@@ -113,4 +122,3 @@ class DBOperations(BaseCommand):
             console.print("[bold green]✅ 开发环境数据清理成功[/bold green]")
         except Exception as e:
             console.print(f"[bold red]❌ 清理开发环境数据失败: {e}[/bold red]")
-            raise

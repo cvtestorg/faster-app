@@ -55,9 +55,9 @@ def get_lifespan(
     - ENABLE_USER_LIFESPANS: 是否启用用户自定义 lifespan (默认 False)
 
     Args:
-        enable_database: 是否启用数据库 lifespan，None 表示从配置读取
-        enable_apps: 是否启用应用 lifespan，None 表示从配置读取
-        enable_user: 是否启用用户自定义 lifespan，None 表示从配置读取
+        enable_database: 是否启用数据库 lifespan,None 表示从配置读取
+        enable_apps: 是否启用应用 lifespan,None 表示从配置读取
+        enable_user: 是否启用用户自定义 lifespan,None 表示从配置读取
 
     Returns:
         组合后的 lifespan 函数
@@ -67,11 +67,11 @@ def get_lifespan(
     # 注册内置 lifespan (优先级: 数据库 < 应用 < 用户自定义)
     # 参数优先级高于配置
     if enable_database is None:
-        enable_database = getattr(configs, "ENABLE_DATABASE_LIFESPAN", False)
+        enable_database = configs.lifespan.enable_database
     if enable_apps is None:
-        enable_apps = getattr(configs, "ENABLE_APPS_LIFESPAN", False)
+        enable_apps = configs.lifespan.enable_apps
     if enable_user is None:
-        enable_user = getattr(configs, "ENABLE_USER_LIFESPANS", False)
+        enable_user = configs.lifespan.enable_user
 
     manager.register(
         "database",
@@ -111,7 +111,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     2. apps_lifespan - 应用生命周期 (可通过 ENABLE_APPS_LIFESPAN 控制)
     3. 用户自定义的 lifespan (可通过 ENABLE_USER_LIFESPANS 控制)
 
-    启动顺序由优先级决定，关闭顺序自动逆序
+    启动顺序由优先级决定,关闭顺序自动逆序
 
     Args:
         app: FastAPI application instance

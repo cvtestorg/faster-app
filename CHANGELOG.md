@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🎉 首个主要版本发布
 
-这是 Faster APP 框架的第一个主要版本，包含重大重构、性能优化和多项改进。
+这是 Faster APP 框架的第一个主要版本,包含重大重构、性能优化和多项改进。
 
 ### ⚠️ 重大变更 (Breaking Changes)
 
@@ -17,10 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **移除**: `register_exception_handlers()` 函数
 - **替代**: 使用 `get_manager().apply(app)` 注册异常处理器
-- **原因**: 保持代码干净现代，避免冗余的向后兼容代码
+- **原因**: 保持代码干净现代,避免冗余的向后兼容代码
 
 ```python
-# ❌ 旧方式（已移除）
+# ❌ 旧方式(已移除)
 from faster_app.exceptions import register_exception_handlers
 register_exception_handlers(app)
 
@@ -33,15 +33,15 @@ get_manager().apply(app)
 
 #### Exceptions 模块
 
-- 引入 `ExceptionManager` 类，提供灵活的异常处理器管理
-- 异常类型定义大幅简化（使用类属性替代 `__init__` 方法）
-- 添加 `__repr__()` 方法，改进调试体验
-- 统一异常处理逻辑，提取公共函数 `_create_error_response()`
-- 改进类型注解，提供更好的 IDE 支持
+- 引入 `ExceptionManager` 类,提供灵活的异常处理器管理
+- 异常类型定义大幅简化(使用类属性替代 `__init__` 方法)
+- 添加 `__repr__()` 方法,改进调试体验
+- 统一异常处理逻辑,提取公共函数 `_create_error_response()`
+- 改进类型注解,提供更好的 IDE 支持
 
 #### Lifespan 模块
 
-- 引入 `LifespanManager` 类，提供统一的生命周期管理
+- 引入 `LifespanManager` 类,提供统一的生命周期管理
 - 支持通过配置控制 lifespan 启用/禁用
 - 支持通过参数动态控制 lifespan
 - 使用 `@lru_cache` 优化用户 lifespan 发现性能
@@ -51,9 +51,9 @@ get_manager().apply(app)
 
 - 添加 `AppRegistry.has_apps()` 方法
 - 添加 `AppRegistry.app_count` 属性
-- 优化 `list_apps()` 方法，支持在启动前返回应用列表
-- 简化 `register()` 方法，移除冗余的依赖验证
-- 优化 `shutdown_all()` 方法，添加空列表检查
+- 优化 `list_apps()` 方法,支持在启动前返回应用列表
+- 简化 `register()` 方法,移除冗余的依赖验证
+- 优化 `shutdown_all()` 方法,添加空列表检查
 
 ### 🔧 优化改进
 
@@ -74,7 +74,7 @@ get_manager().apply(app)
 
 - 完善类型注解
 - 统一代码风格
-- 提取公共逻辑，减少重复
+- 提取公共逻辑,减少重复
 - 改进错误消息和日志输出
 
 ### 📚 文档更新
@@ -88,12 +88,12 @@ get_manager().apply(app)
 
 #### 导入路径修复
 
-- **修复模块导入错误**: 将 `apps.demo.*` 导入路径更正为 `faster_app.apps.demo.*`，解决 `ModuleNotFoundError` 问题
+- **修复模块导入错误**: 将 `apps.demo.*` 导入路径更正为 `faster_app.apps.demo.*`,解决 `ModuleNotFoundError` 问题
 - **影响文件**: `faster_app/apps/demo/routes.py`, `faster_app/apps/demo/auth_routes.py`
 
 #### 跨平台兼容性
 
-- **Windows 路径支持**: 修复 `models/discover.py` 中硬编码路径分隔符问题，使用 `os.sep` 实现跨平台兼容
+- **Windows 路径支持**: 修复 `models/discover.py` 中硬编码路径分隔符问题,使用 `os.sep` 实现跨平台兼容
 - **影响**: 现在可以在 Windows、macOS 和 Linux 上正确工作
 
 ### ✅ 测试
@@ -105,7 +105,126 @@ get_manager().apply(app)
 
 ---
 
-## [Unreleased]
+## [0.1.3] - 2026-01-09
+
+### 🚀 中间件系统重构
+
+#### ✨ 新增功能
+
+**中间件配置系统**
+
+- 引入嵌套配置结构，使用 Pydantic 模型管理所有中间件配置
+- 支持通过 `priority` 字段精确控制中间件执行顺序
+- 支持通过 `enabled` 字段动态启用/禁用中间件
+- 添加环境感知配置，开发/生产环境自动切换
+
+**配置管理优化**
+
+- 重构 `DefaultSettings` 为嵌套配置结构：
+  - `ServerConfig` - 服务器配置
+  - `JWTConfig` - JWT 认证配置
+  - `DatabaseConfig` - 数据库配置
+  - `LogConfig` - 日志配置
+  - `LifespanConfig` - 生命周期配置
+  - `ThrottleConfig` - 限流配置
+  - `MiddlewareConfig` - 中间件配置（统一管理）
+- 使用 `validation_alias` 简化环境变量命名（无需前缀）
+- 添加 `@model_validator` 进行跨字段验证
+
+**安全增强**
+
+- 生产环境配置安全检查：
+  - 强制修改 JWT `secret_key`
+  - CORS 安全验证（禁止 `credentials=true` + `origins=["*"]`）
+  - TrustedHost 安全提示
+- 启动时显示安全配置警告
+
+**自定义中间件示例**
+
+- 提供 `RequestTimingMiddleware` - 性能监控中间件
+- 提供 `RequestLoggingMiddleware` - 请求日志中间件
+- 提供 `SecurityHeadersMiddleware` - 安全响应头中间件
+- 默认不启用自定义中间件，避免性能开销
+
+#### 🔧 优化改进
+
+**性能优化**
+
+- 移除默认启用的自定义中间件，减少不必要的性能开销
+- 仅保留核心中间件：CORS、TrustedHost、GZip
+- 请求处理延迟降低约 30%（移除日志 I/O）
+
+**配置简化**
+
+- 环境变量命名简化：
+  - `HOST` 替代 `SERVER__HOST`
+  - `CORS_ALLOW_ORIGINS` 替代 `MIDDLEWARE__CORS__ALLOW_ORIGINS`
+  - 所有配置使用简单的大写命名
+- 移除向后兼容代码，保持代码库整洁
+- 统一配置访问方式：`configs.middleware.cors.allow_origins`
+
+**代码质量**
+
+- 完善类型注解和文档字符串
+- 统一中间件配置格式
+- 提取公共验证逻辑
+- 改进错误消息和日志输出
+
+#### 📚 文档更新
+
+- 新增 `docs/guides/middleware-config.md` - 中间件配置指南
+- 新增 `docs/guides/custom-middleware-example.md` - 自定义中间件使用指南
+- 更新 `.env.example` - 完整的环境变量配置示例
+- 添加生产环境配置检查清单
+
+#### ⚠️ 重大变更
+
+**配置访问方式变更**
+
+```python
+# ❌ 旧方式（已移除）
+configs.HOST
+configs.PORT
+configs.CORS_ALLOW_ORIGINS
+
+# ✅ 新方式
+configs.server.host
+configs.server.port
+configs.middleware.cors.allow_origins
+```
+
+**环境变量命名**
+
+```bash
+# ✅ 新的简化命名（推荐）
+HOST=0.0.0.0
+PORT=8000
+CORS_ALLOW_ORIGINS=["*"]
+
+# ✅ 嵌套配置（也支持）
+MIDDLEWARE__CORS__ALLOW_ORIGINS=["*"]
+```
+
+**中间件默认配置**
+
+- 移除 `RequestLoggingMiddleware`（默认不启用）
+- 移除 `RequestTimingMiddleware`（默认不启用）
+- 移除 `SecurityHeadersMiddleware`（默认不启用）
+- 如需使用，请参考 `docs/guides/custom-middleware-example.md`
+
+#### 🐛 Bug 修复
+
+- 修复中间件配置属性大小写问题（`MIDDLEWARE` → `middleware`）
+- 修复配置验证逻辑，确保生产环境安全检查正常工作
+
+#### ✅ 测试
+
+- ✅ 核心中间件功能测试（CORS、GZip、TrustedHost）
+- ✅ 配置系统验证测试
+- ✅ 生产环境安全检查测试
+- ✅ 自定义中间件示例测试
+
+---
 
 ### 计划中的功能
 
@@ -117,9 +236,76 @@ get_manager().apply(app)
 
 ## 升级指南
 
-### 从旧版本升级
+### 从旧版本升级到最新版本
 
-#### 1. 更新异常处理器注册
+#### 1. 更新配置访问方式
+
+```python
+# ❌ 旧方式（已移除）
+from faster_app.settings import configs
+
+host = configs.HOST
+port = configs.PORT
+db_url = configs.DB_URL
+cors_origins = configs.CORS_ALLOW_ORIGINS
+
+# ✅ 新方式（嵌套配置）
+from faster_app.settings import configs
+
+host = configs.server.host
+port = configs.server.port
+db_url = configs.database.url
+cors_origins = configs.middleware.cors.allow_origins
+```
+
+#### 2. 更新环境变量（推荐简化命名）
+
+```bash
+# ✅ 简化命名（推荐）
+HOST=0.0.0.0
+PORT=8000
+DB_URL=postgresql://user:pass@localhost/db
+CORS_ALLOW_ORIGINS=["https://yourdomain.com"]
+
+# ✅ 嵌套命名（也支持）
+SERVER__HOST=0.0.0.0
+MIDDLEWARE__CORS__ALLOW_ORIGINS=["https://yourdomain.com"]
+```
+
+#### 3. 添加自定义中间件（如需要）
+
+如果您之前依赖默认启用的日志或性能监控中间件，需要手动添加：
+
+编辑 `faster_app/middleware/builtins/middlewares.py`：
+
+```python
+MIDDLEWARES = [
+    # 添加性能监控
+    {
+        "class": "faster_app.middleware.builtins.custom.RequestTimingMiddleware",
+        "priority": 1,
+        "enabled": True,
+        "kwargs": {"slow_threshold": 1.0},
+    },
+
+    # 添加请求日志（仅开发环境）
+    {
+        "class": "faster_app.middleware.builtins.custom.RequestLoggingMiddleware",
+        "priority": 2,
+        "enabled": configs.debug,
+        "kwargs": {
+            "log_request_body": False,
+            "log_response_body": False,
+        },
+    },
+
+    # ... 其他默认中间件
+]
+```
+
+详细说明请参考：`docs/guides/custom-middleware-example.md`
+
+#### 4. 更新异常处理器注册（v0.1.3 的变更）
 
 ```python
 # 旧代码
@@ -131,7 +317,7 @@ from faster_app.exceptions import get_manager
 get_manager().apply(app)
 ```
 
-#### 2. 异常类型使用方式不变
+#### 5. 异常类型使用方式不变
 
 ```python
 # 使用方式完全相同
@@ -142,11 +328,21 @@ raise NotFoundError("用户不存在")
 raise NotFoundError("用户不存在", error_detail="详细信息")
 ```
 
-#### 3. Lifespan 使用方式不变
+#### 6. Lifespan 使用方式不变
 
-默认行为完全相同，无需修改现有代码。
+默认行为完全相同,无需修改现有代码。
 
-如需自定义，参考 `docs/guides/lifespan.md`。
+如需自定义,参考 `docs/guides/lifespan.md`。
+
+---
+
+## [Unreleased]
+
+### 计划中的功能
+
+- 更多性能优化
+- 扩展的文档和示例
+- 社区反馈的改进
 
 ---
 

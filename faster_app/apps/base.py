@@ -45,7 +45,7 @@ class AppLifecycle(ABC):
         """
         return []
 
-    async def on_startup(self) -> None:
+    async def on_startup(self) -> None:  # noqa
         """应用启动时的钩子函数
 
         在应用启动时调用, 此时依赖的应用已经启动但可能还未就绪。
@@ -56,7 +56,7 @@ class AppLifecycle(ABC):
         """
         pass
 
-    async def on_ready(self) -> None:
+    async def on_ready(self) -> None:  # noqa
         """应用就绪时的钩子函数
 
         在所有依赖应用都已就绪后调用。
@@ -64,7 +64,7 @@ class AppLifecycle(ABC):
         """
         pass
 
-    async def on_shutdown(self) -> None:
+    async def on_shutdown(self) -> None:  # noqa
         """应用关闭时的钩子函数
 
         在应用关闭时调用, 按启动顺序的逆序执行。

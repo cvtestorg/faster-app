@@ -2,7 +2,7 @@
 
 ## 概述
 
-Faster APP 提供了统一的异常处理系统，支持自定义异常类型、灵活的异常处理器管理和标准化的错误响应格式。
+Faster APP 提供了统一的异常处理系统,支持自定义异常类型、灵活的异常处理器管理和标准化的错误响应格式。
 
 ## 异常类型
 
@@ -62,7 +62,7 @@ from faster_app.exceptions import FasterAppError
 
 class PaymentRequiredError(FasterAppError):
     """需要付费 (402)"""
-    
+
     default_status_code = HTTPStatus.PAYMENT_REQUIRED
     default_message = "需要付费才能访问此资源"
 
@@ -83,18 +83,18 @@ raise PaymentRequiredError("您的账户余额不足")
   "message": "资源未找到",
   "data": null,
   "timestamp": "2026-01-02T13:45:00.123456",
-  "error_detail": "详细错误信息（仅开发环境）"
+  "error_detail": "详细错误信息(仅开发环境)"
 }
 ```
 
 ### 字段说明
 
 - `success`: 固定为 `false`
-- `code`: 业务错误码（默认与 HTTP 状态码相同）
+- `code`: 业务错误码(默认与 HTTP 状态码相同)
 - `message`: 错误消息
-- `data`: 附加数据（可选）
-- `timestamp`: 错误发生时间（ISO 8601 格式）
-- `error_detail`: 详细错误信息（仅在开发环境显示）
+- `data`: 附加数据(可选)
+- `timestamp`: 错误发生时间(ISO 8601 格式)
+- `error_detail`: 详细错误信息(仅在开发环境显示)
 
 ## 异常管理器
 
@@ -149,7 +149,7 @@ manager = ExceptionManager()
 manager.register(
     exception_class=NotFoundError,
     handler=custom_handler,
-    priority=10,  # 优先级（数字越小越先注册）
+    priority=10,  # 优先级(数字越小越先注册)
 )
 
 # 注册默认处理器
@@ -200,11 +200,11 @@ from faster_app.exceptions import ForbiddenError
 class UserViewSet(ViewSet):
     async def retrieve(self, request, pk):
         user = await self.get_object(pk)
-        
+
         # 权限检查
         if user.id != request.user.id:
             raise ForbiddenError("您无权访问其他用户的信息")
-        
+
         return user
 ```
 
@@ -240,7 +240,7 @@ raise Exception("用户不存在")
 # ✅ 好的做法
 raise ValidationError(
     "用户名格式错误",
-    error_detail="用户名必须是 3-20 个字符，只能包含字母、数字和下划线"
+    error_detail="用户名必须是 3-20 个字符,只能包含字母、数字和下划线"
 )
 
 # ❌ 不好的做法
@@ -297,7 +297,7 @@ async def get_user(user_id: int):
 # 为特定业务场景创建异常
 class InsufficientBalanceError(FasterAppError):
     """余额不足"""
-    
+
     default_status_code = HTTPStatus.PAYMENT_REQUIRED
     default_message = "账户余额不足"
 
@@ -307,7 +307,7 @@ async def purchase(user_id: int, amount: float):
     user = await get_user(user_id)
     if user.balance < amount:
         raise InsufficientBalanceError(
-            f"需要 {amount} 元，当前余额 {user.balance} 元",
+            f"需要 {amount} 元,当前余额 {user.balance} 元",
             data={"required": amount, "current": user.balance}
         )
 ```
@@ -335,11 +335,11 @@ async def get_user(user_id: int):
     """获取用户信息"""
     if user_id < 0:
         raise ValidationError("用户 ID 必须是正整数")
-    
+
     user = await User.get_or_none(id=user_id)
     if not user:
         raise NotFoundError(f"用户 {user_id} 不存在")
-    
+
     return user
 
 
@@ -353,7 +353,7 @@ async def create_user(username: str, email: str):
             "用户名已存在",
             data={"field": "username", "value": username}
         )
-    
+
     # 创建用户
     user = await User.create(username=username, email=email)
     return user

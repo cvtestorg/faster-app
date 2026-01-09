@@ -3,7 +3,7 @@
    ============================================
    基础字体: 1rem (16px)
    类型比例: 1.2 (Minor Third)
-   
+
    字体层级:
    - h1: 2.25rem (36px) - 页面主标题
    - h2: 1.75rem (28px) - 章节标题
@@ -18,23 +18,27 @@
 .md-tabs {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--md-primary-fg-color) 0%, var(--md-accent-fg-color) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    var(--md-primary-fg-color) 0%,
+    var(--md-accent-fg-color) 100%
+  ) !important;
 }
 
 /* 顶部标题栏 */
 .md-header {
-  font-size: 1.0rem !important;
+  font-size: 1rem !important;
 }
 
 /* 顶部导航标签容器 */
 .md-tabs {
-  font-size: 1.0rem !important;
+  font-size: 1rem !important;
 }
 
 /* 统一的渐变流动背景动画 - 覆盖整个顶部区域 */
 .md-header::before,
 .md-tabs::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -62,7 +66,7 @@
 /* 统一的光束扫过动画 */
 .md-header::after,
 .md-tabs::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -50%;
@@ -117,12 +121,12 @@
 }
 
 .md-tabs__item {
-  font-size: 1.0rem !important;
+  font-size: 1rem !important;
 }
 
 /* 顶部导航标签文字 ("首页", "快速开始", "命令行参考", "许可证") */
 .md-tabs__link {
-  font-size: 1.0rem !important;
+  font-size: 1rem !important;
   font-weight: 500 !important;
   line-height: 1.5 !important;
   transition: all 0.3s ease !important;
@@ -133,7 +137,7 @@
 
 .md-tabs__link:focus,
 .md-tabs__link:hover {
-  font-size: 1.0rem !important;
+  font-size: 1rem !important;
   color: #ffffff !important;
   background-color: rgba(255, 255, 255, 0.1) !important;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
@@ -151,7 +155,7 @@
 /* 导航标签内的文本和所有子元素 */
 .md-tabs__link *,
 .md-tabs__link span {
-  font-size: 1.0rem !important;
+  font-size: 1rem !important;
   color: inherit !important;
 }
 
@@ -189,22 +193,22 @@
 
 /* 顶部导航栏标题 */
 .md-header__title {
-  font-size: 1.0rem !important;
+  font-size: 1rem !important;
 }
 
 /* 侧边栏导航链接 */
 .md-nav__link {
-  font-size: 1.0rem !important;
+  font-size: 1rem !important;
 }
 
 /* 顶部导航栏整体 */
 .md-header {
-  font-size: 1.0rem !important;
+  font-size: 1rem !important;
 }
 
 /* 导航栏中的文本 */
 .md-header__inner {
-  font-size: 1.0rem !important;
+  font-size: 1rem !important;
 }
 
 /* 首页内容区域优化 */
@@ -264,7 +268,7 @@
   margin-bottom: 0.5rem;
 }
 
-/* 代码块样式优化 - 行号和代码高度一致，移除外部边距，修复行号超出问题 */
+/* 代码块样式优化 - 行号和代码高度一致,移除外部边距,修复行号超出问题 */
 .md-content pre,
 .highlight pre {
   font-size: 1.125rem; /* 18px - 与正文一致 */
@@ -272,7 +276,7 @@
   margin: 1rem 0; /* 减小上下外边距 */
 }
 
-/* 代码块容器 - 移除内边距，占满整个区域，确保整体滚动 */
+/* 代码块容器 - 移除内边距,占满整个区域,确保整体滚动 */
 .highlighttable,
 .highlight {
   padding: 0 !important;
@@ -282,7 +286,7 @@
   width: 100%;
 }
 
-/* 代码块表格 - 占满宽度，移除内边距，确保行号和代码一起滚动 */
+/* 代码块表格 - 占满宽度,移除内边距,确保行号和代码一起滚动 */
 .highlighttable table {
   width: 100%;
   margin: 0;
@@ -296,7 +300,7 @@
   margin: 0;
 }
 
-/* 表格行 - 确保没有额外的 padding/margin，高度由内容决定 */
+/* 表格行 - 确保没有额外的 padding/margin,高度由内容决定 */
 .highlighttable tr {
   padding: 0 !important;
   margin: 0 !important;
@@ -304,7 +308,7 @@
   line-height: 1.6 !important; /* 统一行高 */
 }
 
-/* 行号单元格 - 与代码行高完全一致，移除所有内边距 */
+/* 行号单元格 - 与代码行高完全一致,移除所有内边距 */
 .highlighttable .linenos,
 .highlight .linenos,
 .highlighttable td.linenos {
@@ -334,7 +338,7 @@
   height: auto;
 }
 
-/* 代码内容单元格 - 移除内边距，与行号行高完全一致 */
+/* 代码内容单元格 - 移除内边距,与行号行高完全一致 */
 .highlighttable .code,
 .highlight .code,
 .highlighttable td.code {
@@ -348,7 +352,7 @@
   border: none !important;
 }
 
-/* 代码块内的代码 - 统一行高，确保与行号匹配 */
+/* 代码块内的代码 - 统一行高,确保与行号匹配 */
 .highlighttable code,
 .highlight code,
 .md-content pre code,
@@ -372,7 +376,7 @@
 
 /* 行内代码 */
 .md-content code:not(pre code) {
-  font-size: 0.9em; /* 相对父元素，约 16px */
+  font-size: 0.9em; /* 相对父元素,约 16px */
 }
 
 /* 链接优化 */
@@ -403,24 +407,32 @@
 }
 
 .home-hero::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -50%;
   right: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 70%
+  );
   animation: rotate 15s linear infinite;
 }
 
 .home-hero::after {
-  content: '';
+  content: "";
   position: absolute;
   top: -30%;
   left: -30%;
   width: 160%;
   height: 160%;
-  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.08) 0%,
+    transparent 60%
+  );
   animation: rotate 25s linear infinite reverse;
 }
 
@@ -507,20 +519,20 @@
   font-size: 1rem;
   line-height: 1.5;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
   position: relative;
   overflow: hidden;
 }
 
 .btn::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
   transform: translate(-50%, -50%);
   transition: width 0.6s, height 0.6s;
 }
@@ -537,31 +549,31 @@
 
 .btn-primary:hover {
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 .btn-secondary {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   color: #ffffff;
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(10px);
 }
 
 .btn-secondary:hover {
-  background: rgba(255,255,255,0.25);
-  border-color: rgba(255,255,255,0.5);
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
   transform: translateY(-3px) scale(1.05);
 }
 
 .btn-outline {
   background: transparent;
   color: #ffffff;
-  border: 2px solid rgba(255,255,255,0.5);
+  border: 2px solid rgba(255, 255, 255, 0.5);
 }
 
 .btn-outline:hover {
-  background: rgba(255,255,255,0.15);
-  border-color: rgba(255,255,255,0.8);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.8);
   transform: translateY(-3px) scale(1.05);
 }
 
@@ -588,15 +600,27 @@
   height: 100%;
 }
 
-.card:nth-child(1) { animation-delay: 0.1s; }
-.card:nth-child(2) { animation-delay: 0.2s; }
-.card:nth-child(3) { animation-delay: 0.3s; }
-.card:nth-child(4) { animation-delay: 0.4s; }
-.card:nth-child(5) { animation-delay: 0.5s; }
-.card:nth-child(6) { animation-delay: 0.6s; }
+.card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.card:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.card:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.card:nth-child(6) {
+  animation-delay: 0.6s;
+}
 
 .card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -613,7 +637,7 @@
 
 .card:hover {
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
   border-color: var(--md-primary-fg-color);
 }
 
@@ -683,13 +707,19 @@
   height: 100%;
 }
 
-.quick-start-step:nth-child(1) { animation-delay: 0.1s; }
-.quick-start-step:nth-child(2) { animation-delay: 0.2s; }
-.quick-start-step:nth-child(3) { animation-delay: 0.3s; }
+.quick-start-step:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.quick-start-step:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.quick-start-step:nth-child(3) {
+  animation-delay: 0.3s;
+}
 
 .quick-start-step:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   border-color: var(--md-primary-fg-color);
 }
 
@@ -697,7 +727,11 @@
   width: 3.5rem;
   height: 3.5rem;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--md-primary-fg-color), var(--md-accent-fg-color));
+  background: linear-gradient(
+    135deg,
+    var(--md-primary-fg-color),
+    var(--md-accent-fg-color)
+  );
   color: var(--md-primary-bg-color);
   display: flex;
   align-items: center;
@@ -756,7 +790,7 @@
 }
 
 .path-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -773,7 +807,7 @@
 
 .path-card:hover {
   transform: translateX(5px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   border-color: var(--md-primary-fg-color);
 }
 
@@ -816,10 +850,10 @@
   padding-left: 5px;
 }
 
-/* 标题样式优化 - 已在上面统一定义，这里只保留装饰样式 */
+/* 标题样式优化 - 已在上面统一定义,这里只保留装饰样式 */
 
 .md-content h2::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -833,7 +867,11 @@
 .why-section {
   margin: 1.5rem 0 1.75rem 0;
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.05) 0%,
+    rgba(118, 75, 162, 0.05) 100%
+  );
   border-radius: 14px;
   border: 1px solid var(--md-default-fg-color--lightest);
 }
@@ -873,7 +911,11 @@
   text-align: center;
   padding: 1.25rem;
   margin: 1.25rem 0;
-  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(56, 142, 60, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(76, 175, 80, 0.1) 0%,
+    rgba(56, 142, 60, 0.1) 100%
+  );
   border-radius: 10px;
   border: 1px solid rgba(76, 175, 80, 0.3);
   font-size: 1.0625rem; /* 17px - 消息文本 */
@@ -927,7 +969,7 @@ body {
    内容页面背景动画 - 除首页外的其他页面
    ============================================ */
 
-/* 为主容器添加相对定位，确保内容在背景之上 */
+/* 为主容器添加相对定位,确保内容在背景之上 */
 .md-main,
 .md-content,
 .md-typeset {
@@ -937,22 +979,61 @@ body {
 
 /* 粒子光点背景动画 - 与顶栏和 Hero 动画完全不同 */
 body::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: 
-    /* 多个光点粒子，更大更亮，形成明显的动态光点效果 */
-    radial-gradient(circle at 15% 20%, rgba(102, 126, 234, 0.35) 0%, rgba(102, 126, 234, 0.15) 15%, transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(118, 75, 162, 0.32) 0%, rgba(118, 75, 162, 0.12) 18%, transparent 45%),
-    radial-gradient(circle at 50% 60%, rgba(102, 126, 234, 0.28) 0%, rgba(102, 126, 234, 0.1) 20%, transparent 50%),
-    radial-gradient(circle at 25% 80%, rgba(118, 75, 162, 0.3) 0%, rgba(118, 75, 162, 0.08) 22%, transparent 55%),
-    radial-gradient(circle at 75% 15%, rgba(102, 126, 234, 0.33) 0%, rgba(102, 126, 234, 0.13) 16%, transparent 42%),
-    radial-gradient(circle at 40% 90%, rgba(118, 75, 162, 0.29) 0%, rgba(118, 75, 162, 0.11) 19%, transparent 48%),
-    radial-gradient(circle at 60% 40%, rgba(102, 126, 234, 0.27) 0%, rgba(102, 126, 234, 0.09) 21%, transparent 52%),
-    radial-gradient(circle at 90% 70%, rgba(118, 75, 162, 0.31) 0%, rgba(118, 75, 162, 0.14) 17%, transparent 44%);
+  background:
+    /* 多个光点粒子,更大更亮,形成明显的动态光点效果 */ radial-gradient(
+      circle at 15% 20%,
+      rgba(102, 126, 234, 0.35) 0%,
+      rgba(102, 126, 234, 0.15) 15%,
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 85% 30%,
+      rgba(118, 75, 162, 0.32) 0%,
+      rgba(118, 75, 162, 0.12) 18%,
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 50% 60%,
+      rgba(102, 126, 234, 0.28) 0%,
+      rgba(102, 126, 234, 0.1) 20%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 25% 80%,
+      rgba(118, 75, 162, 0.3) 0%,
+      rgba(118, 75, 162, 0.08) 22%,
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 75% 15%,
+      rgba(102, 126, 234, 0.33) 0%,
+      rgba(102, 126, 234, 0.13) 16%,
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 40% 90%,
+      rgba(118, 75, 162, 0.29) 0%,
+      rgba(118, 75, 162, 0.11) 19%,
+      transparent 48%
+    ),
+    radial-gradient(
+      circle at 60% 40%,
+      rgba(102, 126, 234, 0.27) 0%,
+      rgba(102, 126, 234, 0.09) 21%,
+      transparent 52%
+    ),
+    radial-gradient(
+      circle at 90% 70%,
+      rgba(118, 75, 162, 0.31) 0%,
+      rgba(118, 75, 162, 0.14) 17%,
+      transparent 44%
+    );
   background-size: 100% 100%;
   animation: particleFloat 22s ease-in-out infinite;
   z-index: 0;
@@ -969,7 +1050,7 @@ body:has(.home-hero)::before {
   animation: none !important;
 }
 
-/* 粒子光点浮动动画 - 光点缓慢移动和闪烁，形成动态光晕效果 */
+/* 粒子光点浮动动画 - 光点缓慢移动和闪烁,形成动态光晕效果 */
 @keyframes particleFloat {
   0% {
     transform: translate(0, 0) scale(1) rotate(0deg);
@@ -1009,21 +1090,60 @@ body:has(.home-hero)::before {
 @supports not selector(:has(*)) {
   /* 为所有页面添加粒子光点背景动画 */
   body::before {
-    content: '';
+    content: "";
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: 
-      radial-gradient(circle at 15% 20%, rgba(102, 126, 234, 0.35) 0%, rgba(102, 126, 234, 0.15) 15%, transparent 40%),
-      radial-gradient(circle at 85% 30%, rgba(118, 75, 162, 0.32) 0%, rgba(118, 75, 162, 0.12) 18%, transparent 45%),
-      radial-gradient(circle at 50% 60%, rgba(102, 126, 234, 0.28) 0%, rgba(102, 126, 234, 0.1) 20%, transparent 50%),
-      radial-gradient(circle at 25% 80%, rgba(118, 75, 162, 0.3) 0%, rgba(118, 75, 162, 0.08) 22%, transparent 55%),
-      radial-gradient(circle at 75% 15%, rgba(102, 126, 234, 0.33) 0%, rgba(102, 126, 234, 0.13) 16%, transparent 42%),
-      radial-gradient(circle at 40% 90%, rgba(118, 75, 162, 0.29) 0%, rgba(118, 75, 162, 0.11) 19%, transparent 48%),
-      radial-gradient(circle at 60% 40%, rgba(102, 126, 234, 0.27) 0%, rgba(102, 126, 234, 0.09) 21%, transparent 52%),
-      radial-gradient(circle at 90% 70%, rgba(118, 75, 162, 0.31) 0%, rgba(118, 75, 162, 0.14) 17%, transparent 44%);
+    background: radial-gradient(
+        circle at 15% 20%,
+        rgba(102, 126, 234, 0.35) 0%,
+        rgba(102, 126, 234, 0.15) 15%,
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at 85% 30%,
+        rgba(118, 75, 162, 0.32) 0%,
+        rgba(118, 75, 162, 0.12) 18%,
+        transparent 45%
+      ),
+      radial-gradient(
+        circle at 50% 60%,
+        rgba(102, 126, 234, 0.28) 0%,
+        rgba(102, 126, 234, 0.1) 20%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 25% 80%,
+        rgba(118, 75, 162, 0.3) 0%,
+        rgba(118, 75, 162, 0.08) 22%,
+        transparent 55%
+      ),
+      radial-gradient(
+        circle at 75% 15%,
+        rgba(102, 126, 234, 0.33) 0%,
+        rgba(102, 126, 234, 0.13) 16%,
+        transparent 42%
+      ),
+      radial-gradient(
+        circle at 40% 90%,
+        rgba(118, 75, 162, 0.29) 0%,
+        rgba(118, 75, 162, 0.11) 19%,
+        transparent 48%
+      ),
+      radial-gradient(
+        circle at 60% 40%,
+        rgba(102, 126, 234, 0.27) 0%,
+        rgba(102, 126, 234, 0.09) 21%,
+        transparent 52%
+      ),
+      radial-gradient(
+        circle at 90% 70%,
+        rgba(118, 75, 162, 0.31) 0%,
+        rgba(118, 75, 162, 0.14) 17%,
+        transparent 44%
+      );
     background-size: 100% 100%;
     animation: particleFloat 22s ease-in-out infinite;
     z-index: 0;
@@ -1031,9 +1151,9 @@ body:has(.home-hero)::before {
     opacity: 1;
     will-change: transform, opacity;
   }
-  
+
   /* 首页排除背景动画 - 通过检查 body 内是否有 .home-page 或 .home-hero */
-  /* 注意：如果不支持 :has()，这个选择器不会生效，需要通过 JavaScript 添加类名 */
+  /* 注意：如果不支持 :has(),这个选择器不会生效,需要通过 JavaScript 添加类名 */
 }
 
 /* 响应式设计 */
@@ -1041,71 +1161,71 @@ body:has(.home-hero)::before {
   .home-hero {
     padding: 2rem 1.5rem;
   }
-  
+
   .home-hero h1 {
     font-size: 1.875rem; /* 30px - 移动端h1 */
   }
-  
+
   .hero-subtitle {
     font-size: 1.0625rem; /* 17px - 移动端副标题 */
   }
-  
+
   .hero-description {
     font-size: 1rem; /* 16px - 移动端描述 */
   }
-  
+
   .btn {
     padding: 0.75rem 1.5rem;
     font-size: 1rem; /* 16px - 移动端按钮 */
   }
-  
+
   .md-content {
     font-size: 1.0625rem; /* 17px - 移动端正文 */
   }
-  
+
   .md-content h1 {
     font-size: 1.875rem; /* 30px - 移动端h1 */
   }
-  
+
   .md-content h2 {
     font-size: 1.5rem; /* 24px - 移动端h2 */
   }
-  
+
   .md-content h3 {
     font-size: 1.375rem; /* 22px - 移动端h3 */
   }
-  
+
   .md-content h4 {
     font-size: 1.125rem; /* 18px - 移动端h4 */
   }
-  
+
   .home-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .card {
     padding: 1rem;
   }
-  
+
   .quick-start {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .quick-start-step {
     padding: 1rem;
   }
-  
+
   .learning-paths {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .path-card {
     padding: 1rem;
   }
-  
+
   .why-section {
     padding: 1.25rem;
   }

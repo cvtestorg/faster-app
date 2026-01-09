@@ -98,7 +98,7 @@ class AppRegistry:
             logger.error(f"无法确定启动顺序: {e}")
             raise
 
-        logger.info(f"应用启动顺序: {' -> '.join(self._startup_order)}")
+        logger.debug(f"应用启动顺序: {' -> '.join(self._startup_order)}")
 
         # 按顺序启动应用
         for app_name in self._startup_order:
@@ -106,15 +106,16 @@ class AppRegistry:
             self._states[app_name] = AppState.STARTING
 
             try:
-                logger.info(f"[应用启动] 应用: {app_name} 状态: 启动中")
+                logger.debug(f"[应用启动] 应用: {app_name} 状态: 启动中")
                 await asyncio.wait_for(app.on_startup(), timeout=timeout)
-                logger.info(f"[应用启动] 应用: {app_name} 状态: 完成")
-            except asyncio.TimeoutError:
+                logger.debug(f"[应用启动] 应用: {app_name} 状态: 完成")
+            except TimeoutError:
                 logger.error(f"[应用启动] 应用: {app_name} 状态: 超时 超时时间: {timeout}秒")
                 self._states[app_name] = AppState.STOPPED
-                raise RuntimeError(f"应用 {app_name} 启动超时")
             except Exception as e:
-                logger.error(f"[应用启动] 应用: {app_name} 状态: 失败 错误: {str(e)}", exc_info=True)
+                logger.error(
+                    f"[应用启动] 应用: {app_name} 状态: 失败 错误: {str(e)}", exc_info=True
+                )
                 self._states[app_name] = AppState.STOPPED
                 # 继续启动其他应用, 不中断整个流程
                 continue
@@ -124,12 +125,14 @@ class AppRegistry:
             if self._states[app_name] == AppState.STARTING:
                 app = self._apps[app_name]
                 try:
-                    logger.info(f"[应用就绪] 应用: {app_name} 状态: 处理中")
+                    logger.debug(f"[应用就绪] 应用: {app_name} 状态: 处理中")
                     await app.on_ready()
                     self._states[app_name] = AppState.READY
-                    logger.info(f"[应用就绪] 应用: {app_name} 状态: 完成")
+                    logger.debug(f"[应用就绪] 应用: {app_name} 状态: 完成")
                 except Exception as e:
-                    logger.error(f"[应用就绪] 应用: {app_name} 状态: 失败 错误: {str(e)}", exc_info=True)
+                    logger.error(
+                        f"[应用就绪] 应用: {app_name} 状态: 失败 错误: {str(e)}", exc_info=True
+                    )
                     # 继续处理其他应用
 
     async def shutdown_all(self, timeout: float = 30.0) -> None:
@@ -140,7 +143,7 @@ class AppRegistry:
         """
         if not self._startup_order:
             return
-        
+
         # 按启动顺序的逆序关闭
         for app_name in reversed(self._startup_order):
             # 只关闭已启动或就绪的应用
@@ -151,13 +154,15 @@ class AppRegistry:
             self._states[app_name] = AppState.SHUTTING_DOWN
 
             try:
-                logger.info(f"[应用关闭] 应用: {app_name} 状态: 关闭中")
+                logger.debug(f"[应用关闭] 应用: {app_name} 状态: 关闭中")
                 await asyncio.wait_for(app.on_shutdown(), timeout=timeout)
-                logger.info(f"[应用关闭] 应用: {app_name} 状态: 完成")
-            except asyncio.TimeoutError:
+                logger.debug(f"[应用关闭] 应用: {app_name} 状态: 完成")
+            except TimeoutError:
                 logger.warning(f"[应用关闭] 应用: {app_name} 状态: 超时 超时时间: {timeout}秒")
             except Exception as e:
-                logger.error(f"[应用关闭] 应用: {app_name} 状态: 失败 错误: {str(e)}", exc_info=True)
+                logger.error(
+                    f"[应用关闭] 应用: {app_name} 状态: 失败 错误: {str(e)}", exc_info=True
+                )
             finally:
                 self._states[app_name] = AppState.STOPPED
 
@@ -191,7 +196,7 @@ class AppRegistry:
         """
         # 如果还没有计算启动顺序, 使用所有已注册的应用
         app_names = self._startup_order if self._startup_order else list(self._apps.keys())
-        
+
         return [
             {
                 "name": app_name,
@@ -200,7 +205,7 @@ class AppRegistry:
             }
             for app_name in app_names
         ]
-    
+
     def has_apps(self) -> bool:
         """检查是否有已注册的应用
 
@@ -208,7 +213,7 @@ class AppRegistry:
             如果有应用返回 True, 否则返回 False
         """
         return bool(self._apps)
-    
+
     @property
     def app_count(self) -> int:
         """获取已注册的应用数量

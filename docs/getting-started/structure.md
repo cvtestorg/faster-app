@@ -1,12 +1,12 @@
 # 项目结构
 
-Faster APP 采用约定优于配置的理念，为 FastAPI 项目定义了一套标准化的目录结构。
+Faster APP 采用约定优于配置的理念,为 FastAPI 项目定义了一套标准化的目录结构。
 
 ## 完整项目结构
 
 ```
 your-project/
-├── apps/                      # 应用目录（核心）
+├── apps/                      # 应用目录(核心)
 │   ├── users/                # 用户模块
 │   │   ├── __init__.py
 │   │   ├── models.py         # 数据模型
@@ -31,7 +31,7 @@ your-project/
 │       └── 0_*.py            # 迁移文件
 ├── .env                       # 环境变量
 ├── .env.example              # 环境变量示例
-├── main.py                   # 自定义入口（可选）
+├── main.py                   # 自定义入口(可选)
 ├── pyproject.toml            # 项目配置
 └── README.md
 ```
@@ -40,7 +40,7 @@ your-project/
 
 ### `apps/` - 应用目录
 
-这是项目的核心，所有业务逻辑都组织在这里。每个子目录代表一个功能模块（类似 Django 的 app）。
+这是项目的核心,所有业务逻辑都组织在这里。每个子目录代表一个功能模块(类似 Django 的 app)。
 
 #### 标准模块结构
 
@@ -49,9 +49,9 @@ your-project/
 ```
 apps/users/
 ├── __init__.py         # 模块初始化
-├── models.py          # 数据模型（Tortoise ORM）
-├── routes.py          # API 路由（FastAPI Router）
-├── schemas.py         # 数据验证模型（Pydantic）
+├── models.py          # 数据模型(Tortoise ORM)
+├── routes.py          # API 路由(FastAPI Router)
+├── schemas.py         # 数据验证模型(Pydantic)
 ├── commands.py        # 命令行工具
 ├── tasks.py           # 异步任务
 └── utils.py           # 工具函数
@@ -61,7 +61,7 @@ apps/users/
 
 ##### `models.py` - 数据模型
 
-定义数据库模型，使用 Tortoise ORM：
+定义数据库模型,使用 Tortoise ORM：
 
 ```python
 from faster_app.models.base import UUIDModel, DateTimeModel
@@ -210,7 +210,7 @@ migrations/
 ```
 
 !!! warning "注意"
-不要手动修改迁移文件，除非你知道自己在做什么。
+不要手动修改迁移文件,除非你知道自己在做什么。
 
 ## 配置文件
 
@@ -247,7 +247,7 @@ Python 项目的标准配置文件：
 ```toml
 [project]
 name = "my-app"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
     "faster-app",
 ]
@@ -259,9 +259,9 @@ dev = [
 ]
 ```
 
-### `main.py` - 自定义入口（可选）
+### `main.py` - 自定义入口(可选)
 
-如果需要自定义 FastAPI 应用，可以创建此文件：
+如果需要自定义 FastAPI 应用,可以创建此文件：
 
 ```python
 from faster_app.app import create_app
@@ -280,7 +280,7 @@ async def custom_middleware(request, call_next):
 ```
 
 !!! tip "优先级"
-如果存在 `main.py`，`faster server start` 会优先使用它。
+如果存在 `main.py`,`faster server start` 会优先使用它。
 
 ## 目录创建命令
 
@@ -310,18 +310,18 @@ apps/
 
 ### 2. 保持模块独立
 
-每个模块应该尽可能独立，避免循环依赖。
+每个模块应该尽可能独立,避免循环依赖。
 
 ### 3. 使用命名约定
 
-- 模块名：小写，使用下划线（如 `user_profile`）
-- 模型名：帕斯卡命名（如 `UserProfile`）
-- 路由前缀：小写，使用连字符（如 `/user-profiles`）
+- 模块名：小写,使用下划线(如 `user_profile`)
+- 模型名：帕斯卡命名(如 `UserProfile`)
+- 路由前缀：小写,使用连字符(如 `/user-profiles`)
 
 ### 4. 合理划分粒度
 
-- 小型项目：少量模块，功能集中
-- 大型项目：细粒度模块，职责单一
+- 小型项目：少量模块,功能集中
+- 大型项目：细粒度模块,职责单一
 
 ## 下一步
 

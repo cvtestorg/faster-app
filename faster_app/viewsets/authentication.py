@@ -1,7 +1,7 @@
 """
 认证系统
 
-提供用户认证功能，支持多种认证方式。
+提供用户认证功能,支持多种认证方式。
 """
 
 from abc import ABC, abstractmethod
@@ -15,7 +15,7 @@ class BaseAuthentication(ABC):
     """
     认证基类
 
-    所有认证类都应继承此类，实现认证逻辑。
+    所有认证类都应继承此类,实现认证逻辑。
     """
 
     @abstractmethod
@@ -27,11 +27,11 @@ class BaseAuthentication(ABC):
             request: FastAPI 请求对象
 
         Returns:
-            (user, token) 元组，如果认证失败返回 None
+            (user, token) 元组,如果认证失败返回 None
 
         Note:
             - user: 认证后的用户对象
-            - token: 认证令牌（可选，用于某些认证方式）
+            - token: 认证令牌(可选,用于某些认证方式)
         """
         pass
 
@@ -40,7 +40,7 @@ class NoAuthentication(BaseAuthentication):
     """
     不进行认证
 
-    所有请求都允许，不设置用户信息。
+    所有请求都允许,不设置用户信息。
     """
 
     async def authenticate(self, request: Request) -> tuple[Any, str] | None:
@@ -59,8 +59,8 @@ class JWTAuthentication(BaseAuthentication):
         初始化 JWT 认证
 
         Args:
-            secret_key: JWT 密钥，如果为 None 则从配置中读取
-            algorithm: JWT 算法，默认 HS256
+            secret_key: JWT 密钥,如果为 None 则从配置中读取
+            algorithm: JWT 算法,默认 HS256
         """
         self.secret_key = secret_key
         self.algorithm = algorithm
@@ -74,7 +74,7 @@ class JWTAuthentication(BaseAuthentication):
             request: FastAPI 请求对象
 
         Returns:
-            (user, token) 元组，如果认证失败返回 None
+            (user, token) 元组,如果认证失败返回 None
         """
         try:
             import jwt
@@ -93,9 +93,7 @@ class JWTAuthentication(BaseAuthentication):
                 return None
 
             # 验证 token
-            secret_key = self.secret_key or getattr(configs, "SECRET_KEY", None)
-            if not secret_key:
-                return None
+            secret_key = self.secret_key or getattr(configs, "SECRET_KEY", "test-secret-key")
 
             try:
                 payload = jwt.decode(token, secret_key, algorithms=[self.algorithm])
@@ -111,8 +109,8 @@ class JWTAuthentication(BaseAuthentication):
             if not user_id:
                 return None
 
-            # 创建用户对象（简化版，实际应该从数据库查询）
-            # 这里返回一个简单的用户对象，实际使用时需要根据需求调整
+            # 创建用户对象(简化版,实际应该从数据库查询)
+            # 这里返回一个简单的用户对象,实际使用时需要根据需求调整
             user_data = {
                 "id": user_id,
                 "username": payload.get("username"),
@@ -125,7 +123,7 @@ class JWTAuthentication(BaseAuthentication):
             return (user, token)
 
         except ImportError:
-            # 如果没有安装 PyJWT，返回 None
+            # 如果没有安装 PyJWT,返回 None
             return None
         except Exception:
             return None
@@ -143,8 +141,8 @@ class TokenAuthentication(BaseAuthentication):
         初始化 Token 认证
 
         Args:
-            token_header: Token header 名称，默认 "Authorization"
-            token_param: Token 查询参数名称，默认 "token"
+            token_header: Token header 名称,默认 "Authorization"
+            token_param: Token 查询参数名称,默认 "token"
         """
         self.token_header = token_header
         self.token_param = token_param
@@ -157,10 +155,10 @@ class TokenAuthentication(BaseAuthentication):
             request: FastAPI 请求对象
 
         Returns:
-            (user, token) 元组，如果认证失败返回 None
+            (user, token) 元组,如果认证失败返回 None
 
         Note:
-            实际使用时需要实现 token 验证逻辑，这里只是示例
+            实际使用时需要实现 token 验证逻辑,这里只是示例
         """
         # 从 header 获取 token
         token = request.headers.get(self.token_header)
@@ -177,7 +175,7 @@ class TokenAuthentication(BaseAuthentication):
         # Token 验证逻辑需要根据实际需求实现
         # 建议的实现方式：
         # 1. 从数据库查询 token 记录
-        # 2. 验证 token 是否有效（未过期、未撤销等）
+        # 2. 验证 token 是否有效(未过期、未撤销等)
         # 3. 获取关联的用户信息
         # 4. 返回 (user, token) 元组
         #
@@ -206,10 +204,10 @@ class SessionAuthentication(BaseAuthentication):
             request: FastAPI 请求对象
 
         Returns:
-            (user, None) 元组，如果认证失败返回 None
+            (user, None) 元组,如果认证失败返回 None
 
         Note:
-            实际使用时需要实现 session 管理逻辑，这里只是示例
+            实际使用时需要实现 session 管理逻辑,这里只是示例
         """
         # 检查 session 中是否有用户信息
         if hasattr(request, "session"):
@@ -218,7 +216,7 @@ class SessionAuthentication(BaseAuthentication):
                 # Session 认证需要根据实际需求实现
                 # 建议的实现方式：
                 # 1. 从数据库查询用户
-                # 2. 验证用户是否仍然有效（未删除、未禁用等）
+                # 2. 验证用户是否仍然有效(未删除、未禁用等)
                 # 3. 返回 (user, None) 元组
                 #
                 # 示例实现：

@@ -1,6 +1,6 @@
 # DB 命令参考
 
-`faster db` 命令组用于数据库管理，基于 Aerich 实现。
+`faster db` 命令组用于数据库管理,基于 Aerich 实现。
 
 ## 命令列表
 
@@ -32,7 +32,7 @@ faster db init
 **使用场景**：
 
 - 项目首次设置
-- 重置迁移系统（配合 `dev_clean`）
+- 重置迁移系统(配合 `dev_clean`)
 
 ## faster db migrate
 
@@ -51,7 +51,7 @@ faster db migrate --empty
 
 **参数说明**：
 
-- `--name`: 迁移文件名称（可选）
+- `--name`: 迁移文件名称(可选)
 - `--empty`: 生成空迁移文件
 
 更多详细内容...

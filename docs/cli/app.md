@@ -15,7 +15,7 @@
 
 ## faster app demo
 
-创建示例应用模块，包含完整的 CRUD 示例。
+创建示例应用模块,包含完整的 CRUD 示例。
 
 ```bash
 faster app demo

@@ -46,7 +46,7 @@ class ServerOperations(BaseCommand):
                 console.print(
                     "[bold green]⚙️  使用用户自定义的 FastAPI 应用实例[/bold green]"
                 )
-                app_target = "main:app" if configs.DEBUG else user_main.app
+                app_target = "main:app" if configs.debug else user_main.app
                 self._run_server(app_target)
                 return True
             elif hasattr(user_main, "main") and callable(user_main.main):
@@ -69,7 +69,7 @@ class ServerOperations(BaseCommand):
             app_target: 应用实例或工厂函数路径
             factory: 是否使用工厂模式
         """
-        reload = configs.DEBUG
+        reload = configs.debug
 
         # 生产模式下的特殊处理
         if not reload:
@@ -98,8 +98,8 @@ class ServerOperations(BaseCommand):
         uvicorn.run(
             app_target,
             factory=factory,
-            host=configs.HOST,
-            port=configs.PORT,
+            host=configs.server.host,
+            port=configs.server.port,
             reload=reload,
             log_config=log_config,
         )

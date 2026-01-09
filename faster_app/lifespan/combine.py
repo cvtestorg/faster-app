@@ -4,9 +4,8 @@ Lifespan 组合器
 支持组合多个独立的 lifespan 上下文管理器。
 """
 
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 from contextlib import AsyncExitStack, asynccontextmanager
-from typing import Callable
 
 from fastapi import FastAPI
 

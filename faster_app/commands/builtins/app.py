@@ -14,9 +14,9 @@ class AppCommand(BaseCommand):
 
     def env(self):
         """🔧 创建环境配置文件 (.env) - 从模板文件复制环境变量配置"""
-        # 拷贝项目根路径下的 .env.example 文件到项目根路径
+        # 拷贝项目根路径下 public 目录下的 .env.example 文件到项目根路径
         try:
-            shutil.copy(f"{BASE_DIR}/.env.example", ".env")
+            shutil.copy(f"{BASE_DIR}/public/.env.example", ".env")
             console.print("[bold green]✅ .env 文件创建成功[/bold green]")
         except FileExistsError:
             console.print("[bold yellow]ℹ️  .env 文件已存在[/bold yellow]")
@@ -48,17 +48,6 @@ class AppCommand(BaseCommand):
         except Exception as e:
             console.print(f"[bold red]❌ config 目录创建失败: {e}[/bold red]")
 
-    def main(self):
-        """🚀 创建主程序文件 (main.py) - 生成应用入口点"""
-        # 拷贝 /main.py 到 . 目录
-        try:
-            shutil.copy(f"{BASE_DIR}/main.py", "./main.py")
-            console.print("[bold green]✅ main.py 文件创建成功[/bold green]")
-        except FileExistsError:
-            console.print("[bold yellow]ℹ️  main.py 文件已存在[/bold yellow]")
-        except Exception as e:
-            console.print(f"[bold red]❌ main.py 文件创建失败: {e}[/bold red]")
-
     def middleware(self):
         """🔗 创建中间件目录 - 生成请求处理中间件组件"""
         # 拷贝 /middleware 到 . 目录
@@ -72,11 +61,33 @@ class AppCommand(BaseCommand):
 
     def docker(self):
         """🐳 创建 Docker 配置文件 - 生成容器化部署配置"""
-        # 拷贝 /runtime/Dockerfile 到 . 目录
+        # 拷贝 /public/Dockerfile 到 . 目录
         try:
-            shutil.copy(f"{BASE_DIR}/runtime/Dockerfile", "./Dockerfile")
+            shutil.copy(f"{BASE_DIR}/public/Dockerfile", "./Dockerfile")
             console.print("[bold green]✅ Dockerfile 文件创建成功[/bold green]")
         except FileExistsError:
             console.print("[bold yellow]ℹ️  Dockerfile 文件已存在[/bold yellow]")
         except Exception as e:
             console.print(f"[bold red]❌ Dockerfile 文件创建失败: {e}[/bold red]")
+
+    def launch(self):
+        """🚀 创建 launch.json 文件 - 生成 VSCode 调试配置"""
+        # 拷贝 /public/launch.json 到 . 目录
+        try:
+            shutil.copy(f"{BASE_DIR}/public/launch.json", "./launch.json")
+            console.print("[bold green]✅ launch.json 文件创建成功[/bold green]")
+        except FileExistsError:
+            console.print("[bold yellow]ℹ️  launch.json 文件已存在[/bold yellow]")
+        except Exception as e:
+            console.print(f"[bold red]❌ launch.json 文件创建失败: {e}[/bold red]")
+
+    def makefile(self):
+        """🚀 创建 Makefile 文件 - 生成 Makefile 配置"""
+        # 拷贝 /public/Makefile 到 . 目录
+        try:
+            shutil.copy(f"{BASE_DIR}/public/Makefile", "./Makefile")
+            console.print("[bold green]✅ Makefile 文件创建成功[/bold green]")
+        except FileExistsError:
+            console.print("[bold yellow]ℹ️  Makefile 文件已存在[/bold yellow]")
+        except Exception as e:
+            console.print(f"[bold red]❌ Makefile 文件创建失败: {e}[/bold red]")

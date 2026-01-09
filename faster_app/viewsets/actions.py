@@ -1,7 +1,7 @@
 """
 Action 装饰器
 
-提供 @action 装饰器用于定义自定义操作，类似 DRF 的 @action。
+提供 @action 装饰器用于定义自定义操作,类似 DRF 的 @action。
 """
 
 from collections.abc import Callable
@@ -22,10 +22,10 @@ def action(
     装饰器：定义自定义操作
 
     Args:
-        methods: HTTP 方法列表，如 ["GET", "POST"]，默认 ["GET"]
-        detail: 是否是针对单个对象的操作（需要 pk 参数）
-        url_path: 自定义 URL 路径，默认使用函数名
-        url_name: URL 名称（用于反向解析）
+        methods: HTTP 方法列表,如 ["GET", "POST"],默认 ["GET"]
+        detail: 是否是针对单个对象的操作(需要 pk 参数)
+        url_path: 自定义 URL 路径,默认使用函数名
+        url_name: URL 名称(用于反向解析)
         **kwargs: 其他 FastAPI 路由参数
 
     Returns:

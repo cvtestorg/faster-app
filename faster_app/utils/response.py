@@ -19,9 +19,9 @@ class ApiResponse:
     success and error scenarios.
 
     Note:
-        - **抛出异常**: 对于需要中断流程的错误（如 NotFoundError, UnauthorizedError 等），
-          应该抛出异常，由全局异常处理器自动处理。
-        - **返回错误响应**: 对于业务逻辑错误，但需要返回错误信息给用户而不中断流程的场景，
+        - **抛出异常**: 对于需要中断流程的错误(如 NotFoundError, UnauthorizedError 等),
+          应该抛出异常,由全局异常处理器自动处理。
+        - **返回错误响应**: 对于业务逻辑错误,但需要返回错误信息给用户而不中断流程的场景,
           可以使用 `ApiResponse.error()` 直接返回错误响应。
     """
 
@@ -87,7 +87,7 @@ class ApiResponse:
             - Avoid including sensitive information in error_detail in production
 
         Example:
-            # 业务逻辑错误，需要返回给用户但不中断流程
+            # 业务逻辑错误,需要返回给用户但不中断流程
             >>> if not valid_condition:
             ...     return ApiResponse.error(
             ...         message="业务验证失败",
@@ -95,7 +95,7 @@ class ApiResponse:
             ...         status_code=HTTPStatus.BAD_REQUEST
             ...     )
 
-            # 需要中断流程的错误，使用异常
+            # 需要中断流程的错误,使用异常
             >>> from faster_app.exceptions import NotFoundError
             >>> raise NotFoundError(message="资源未找到")
         """

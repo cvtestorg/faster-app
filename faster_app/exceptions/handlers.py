@@ -27,7 +27,7 @@ def _create_error_response(
     include_detail: bool = True,
 ) -> JSONResponse:
     """创建标准错误响应
-    
+
     Args:
         code: 业务错误码
         message: 错误消息
@@ -36,7 +36,7 @@ def _create_error_response(
         error_detail: 详细错误信息
         extra: 额外字段
         include_detail: 是否包含详细信息
-    
+
     Returns:
         JSONResponse 对象
     """
@@ -47,13 +47,13 @@ def _create_error_response(
         "data": data,
         "timestamp": datetime.now().isoformat(),
     }
-    
+
     if include_detail and error_detail:
         response_data["error_detail"] = error_detail
-    
+
     if extra:
         response_data.update(extra)
-    
+
     return JSONResponse(content=response_data, status_code=status_code)
 
 
@@ -69,7 +69,7 @@ async def faster_app_exception_handler(request: Request, exc: FasterAppError) ->
     """
     # 在生产环境中隐藏详细错误信息
     include_detail = configs.DEBUG
-    
+
     logger.warning(
         f"[异常处理] {exc.__class__.__name__} 消息: {exc.message} "
         f"错误码: {exc.code} 状态码: {exc.status_code}"
@@ -96,14 +96,14 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         标准化的错误响应
     """
     errors = exc.errors()
-    
+
     # 格式化错误消息
     error_messages = [
         f"{' -> '.join(str(loc) for loc in error.get('loc', []))}: {error.get('msg', '验证失败')}"
         for error in errors
     ]
     error_detail = "; ".join(error_messages)
-    
+
     logger.warning(f"[请求验证] 验证失败 详情: {error_detail}")
 
     # 在开发环境中显示详细错误信息
@@ -130,7 +130,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException) 
         标准化的错误响应
     """
     message = exc.detail if hasattr(exc, "detail") else "HTTP 错误"
-    
+
     logger.warning(f"[HTTP异常] 状态码: {exc.status_code} 详情: {message}")
 
     return _create_error_response(

@@ -1,7 +1,7 @@
 """
 统一日志格式工具
 
-提供统一的日志格式，方便问题排查和日志分析。
+提供统一的日志格式,方便问题排查和日志分析。
 """
 
 import logging
@@ -19,7 +19,7 @@ def format_log_message(
     message: str | None = None,
 ) -> str:
     """
-    格式化日志消息，统一格式便于排查问题
+    格式化日志消息,统一格式便于排查问题
 
     Args:
         action: 操作类型 (如: "启动应用", "创建记录", "处理请求")
@@ -27,7 +27,7 @@ def format_log_message(
         resource_id: 资源标识 (如: 应用名称, 记录ID)
         status: 状态 (如: "成功", "失败", "完成")
         details: 额外详细信息字典
-        message: 自定义消息 (如果提供，将优先使用)
+        message: 自定义消息 (如果提供,将优先使用)
 
     Returns:
         格式化后的日志消息
@@ -70,13 +70,13 @@ def log_info(
     logger_instance: logging.Logger | None = None,
 ) -> None:
     """记录 INFO 级别日志
-    
-    使用 extra 参数传递结构化数据，JSON 格式中会作为顶级字段。
+
+    使用 extra 参数传递结构化数据,JSON 格式中会作为顶级字段。
     """
     log = logger_instance or logger
     msg = format_log_message(action, resource, resource_id, status, details, message)
-    
-    # 构建结构化数据，用于 JSON 格式
+
+    # 构建结构化数据,用于 JSON 格式
     extra = {
         "event": action,
     }
@@ -88,7 +88,7 @@ def log_info(
         extra["status"] = status
     if details:
         extra.update(details)
-    
+
     log.info(msg, extra=extra)
 
 
@@ -102,13 +102,13 @@ def log_warning(
     logger_instance: logging.Logger | None = None,
 ) -> None:
     """记录 WARNING 级别日志
-    
-    使用 extra 参数传递结构化数据，JSON 格式中会作为顶级字段。
+
+    使用 extra 参数传递结构化数据,JSON 格式中会作为顶级字段。
     """
     log = logger_instance or logger
     msg = format_log_message(action, resource, resource_id, status, details, message)
-    
-    # 构建结构化数据，用于 JSON 格式
+
+    # 构建结构化数据,用于 JSON 格式
     extra = {
         "event": action,
     }
@@ -120,7 +120,7 @@ def log_warning(
         extra["status"] = status
     if details:
         extra.update(details)
-    
+
     log.warning(msg, extra=extra)
 
 
@@ -135,13 +135,13 @@ def log_error(
     exc_info: bool = False,
 ) -> None:
     """记录 ERROR 级别日志
-    
-    使用 extra 参数传递结构化数据，JSON 格式中会作为顶级字段。
+
+    使用 extra 参数传递结构化数据,JSON 格式中会作为顶级字段。
     """
     log = logger_instance or logger
     msg = format_log_message(action, resource, resource_id, status, details, message)
-    
-    # 构建结构化数据，用于 JSON 格式
+
+    # 构建结构化数据,用于 JSON 格式
     extra = {
         "event": action,
     }
@@ -153,7 +153,7 @@ def log_error(
         extra["status"] = status
     if details:
         extra.update(details)
-    
+
     log.error(msg, extra=extra, exc_info=exc_info)
 
 
@@ -167,13 +167,13 @@ def log_debug(
     logger_instance: logging.Logger | None = None,
 ) -> None:
     """记录 DEBUG 级别日志
-    
-    使用 extra 参数传递结构化数据，JSON 格式中会作为顶级字段。
+
+    使用 extra 参数传递结构化数据,JSON 格式中会作为顶级字段。
     """
     log = logger_instance or logger
     msg = format_log_message(action, resource, resource_id, status, details, message)
-    
-    # 构建结构化数据，用于 JSON 格式
+
+    # 构建结构化数据,用于 JSON 格式
     extra = {
         "event": action,
     }
@@ -185,5 +185,5 @@ def log_debug(
         extra["status"] = status
     if details:
         extra.update(details)
-    
+
     log.debug(msg, extra=extra)

@@ -17,12 +17,12 @@ from faster_app.settings.builtins.orm import TORTOISE_ORM
 @asynccontextmanager
 async def database_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """数据库生命周期管理"""
-    logger.info("初始化数据库连接...")
+    logger.debug("初始化数据库连接...")
     await Tortoise.init(config=TORTOISE_ORM)
     logger.info("数据库连接初始化完成")
 
     yield
 
-    logger.info("关闭数据库连接...")
+    logger.debug("关闭数据库连接...")
     await Tortoise.close_connections()
-    logger.info("数据库连接已关闭")
+    logger.debug("数据库连接已关闭")

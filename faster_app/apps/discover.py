@@ -8,6 +8,8 @@ import logging
 
 from faster_app.apps.base import AppLifecycle
 from faster_app.apps.registry import AppRegistry
+
+# from faster_app.utils import BASE_DIR
 from faster_app.utils.discover import BaseDiscover
 
 logger = logging.getLogger(__name__)
@@ -25,6 +27,12 @@ class AppLifecycleDiscover(BaseDiscover):
             "skip_dirs": ["__pycache__", "utils", "tests"],
             "skip_files": [],
         },
+        # {
+        #     "directory": f"{BASE_DIR}/apps",
+        #     "filename": "lifecycle.py",
+        #     "skip_dirs": ["__pycache__", "utils", "tests"],
+        #     "skip_files": [],
+        # },
     ]
 
     def discover(self) -> AppRegistry:
@@ -40,14 +48,14 @@ class AppLifecycleDiscover(BaseDiscover):
         instances = super().discover()
 
         if not instances:
-            logger.info("未发现任何应用生命周期")
+            logger.debug("未发现任何应用生命周期")
             return registry
 
         # 注册所有应用
         for instance in instances:
             try:
                 registry.register(instance)
-                logger.info(f"注册应用: {instance.app_name}")
+                logger.debug(f"注册应用: {instance.app_name}")
             except ValueError as e:
                 logger.error(f"注册应用失败: {e}")
                 raise

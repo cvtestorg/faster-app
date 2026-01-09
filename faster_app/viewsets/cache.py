@@ -1,7 +1,7 @@
 """
 缓存系统
 
-提供简单的缓存装饰器和工具，用于缓存 ViewSet 的响应。
+提供简单的缓存装饰器和工具,用于缓存 ViewSet 的响应。
 """
 
 import hashlib
@@ -27,7 +27,7 @@ class SimpleCache:
         初始化缓存
 
         Args:
-            default_timeout: 默认过期时间（秒），默认 5 分钟
+            default_timeout: 默认过期时间(秒),默认 5 分钟
         """
         self.default_timeout = default_timeout
 
@@ -39,7 +39,7 @@ class SimpleCache:
             key: 缓存键
 
         Returns:
-            缓存值，如果不存在或已过期返回 None
+            缓存值,如果不存在或已过期返回 None
         """
         import time
 
@@ -60,7 +60,7 @@ class SimpleCache:
         Args:
             key: 缓存键
             value: 缓存值
-            timeout: 过期时间（秒），如果为 None 使用默认值
+            timeout: 过期时间(秒),如果为 None 使用默认值
         """
         import time
 
@@ -96,9 +96,9 @@ def cache_response(
     缓存响应装饰器
 
     Args:
-        timeout: 缓存过期时间（秒），默认 5 分钟
-        key_func: 自定义缓存键生成函数，如果为 None 使用默认函数
-        cache_instance: 缓存实例，如果为 None 使用全局缓存
+        timeout: 缓存过期时间(秒),默认 5 分钟
+        key_func: 自定义缓存键生成函数,如果为 None 使用默认函数
+        cache_instance: 缓存实例,如果为 None 使用全局缓存
 
     Returns:
         装饰器函数
@@ -156,7 +156,7 @@ def _generate_cache_key(request: Request, func_name: str) -> str:
         str(sorted(request.query_params.items())),
     ]
 
-    # 如果有用户，包含用户 ID
+    # 如果有用户,包含用户 ID
     if hasattr(request.state, "user") and request.state.user:
         user_id = getattr(request.state.user, "id", None)
         if user_id:
@@ -172,8 +172,8 @@ def invalidate_cache(pattern: str | None = None, cache_instance: SimpleCache | N
     使缓存失效
 
     Args:
-        pattern: 缓存键模式（可选，如果提供则只删除匹配的键）
-        cache_instance: 缓存实例，如果为 None 使用全局缓存
+        pattern: 缓存键模式(可选,如果提供则只删除匹配的键)
+        cache_instance: 缓存实例,如果为 None 使用全局缓存
     """
     cache = cache_instance or _default_cache
 

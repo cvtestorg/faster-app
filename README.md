@@ -7,7 +7,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.12+-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.116+-green.svg)](https://fastapi.tiangolo.com)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.1.2-orange.svg)](https://github.com/mautops/faster-app)
+[![Version](https://img.shields.io/badge/version-0.1.3-orange.svg)](https://github.com/mautops/faster-app)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://mautops.github.io/faster-app/)
 
 _为 FastAPI 带来 Django 风格的项目结构和开发体验_
@@ -18,7 +18,7 @@ _为 FastAPI 带来 Django 风格的项目结构和开发体验_
 
 <br>
 
-> 💡 **提示**：README 仅包含快速入门指南，完整的使用教程、API 参考和最佳实践请访问 [📖 在线文档站](https://mautops.github.io/faster-app/)
+> 💡 **提示**：README 仅包含快速入门指南,完整的使用教程、API 参考和最佳实践请访问 [📖 在线文档站](https://mautops.github.io/faster-app/)
 
 </div>
 
@@ -281,8 +281,8 @@ faster server start          # 启动开发服务器
 
 ## 💝 赞助支持
 
-如果 Faster APP 帮你节省了时间、提升了效率，或让你的开发工作变得更轻松，不妨请作者喝杯咖啡 ☕️  
-**你的每一份支持，都是我持续优化和添加新功能的动力！** ❤️
+如果 Faster APP 帮你节省了时间、提升了效率,或让你的开发工作变得更轻松,不妨请作者喝杯咖啡 ☕️  
+**你的每一份支持,都是我持续优化和添加新功能的动力！** ❤️
 
 <div align="center">
 
@@ -309,7 +309,7 @@ _感谢每一份支持！你的鼓励是我持续更新的动力_ 🚀
 
 ## 🌟 给个 Star 吧！
 
-**如果 Faster APP 对你有帮助，请给我们一个 ⭐️ Star！**
+**如果 Faster APP 对你有帮助,请给我们一个 ⭐️ Star！**
 
 这是对开源项目最好的支持和鼓励
 

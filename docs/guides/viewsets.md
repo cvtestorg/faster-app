@@ -2,17 +2,18 @@
 
 ## 概述
 
-ViewSet 提供了类似 Django REST Framework (DRF) 的功能，用于快速构建 RESTful API。它使用组合模式（Mixin）和策略模式，提供了灵活且强大的 API 构建能力。
+ViewSet 提供了类似 Django REST Framework (DRF) 的功能,用于快速构建 RESTful API。它使用组合模式(Mixin)和策略模式,提供了灵活且强大的 API 构建能力。
 
 ## 核心概念
 
 ### ViewSet
 
-ViewSet 是一个类，它将一组相关的 CRUD 操作组织在一起。它类似于 DRF 的 ViewSet，但针对 FastAPI 和异步操作进行了优化。
+ViewSet 是一个类,它将一组相关的 CRUD 操作组织在一起。它类似于 DRF 的 ViewSet,但针对 FastAPI 和异步操作进行了优化。
 
 ### Mixin
 
 Mixin 类提供可组合的功能：
+
 - `ListModelMixin` - 列表查询
 - `CreateModelMixin` - 创建
 - `RetrieveModelMixin` - 单个查询
@@ -21,8 +22,8 @@ Mixin 类提供可组合的功能：
 
 ### 预定义的 ViewSet
 
-- `ModelViewSet` - 完整的 CRUD 操作（组合所有 Mixin）
-- `ReadOnlyModelViewSet` - 只读操作（列表和单个查询）
+- `ModelViewSet` - 完整的 CRUD 操作(组合所有 Mixin)
+- `ReadOnlyModelViewSet` - 只读操作(列表和单个查询)
 
 ## 快速开始
 
@@ -35,9 +36,9 @@ from faster_app.apps.demo.schemas import DemoCreate, DemoUpdate, DemoResponse
 
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    create_serializer_class = DemoCreate
-    update_serializer_class = DemoUpdate
+    schema = DemoResponse
+    create_schema = DemoCreate
+    update_schema = DemoUpdate
 
 # 注册路由
 router = as_router(DemoViewSet, prefix="/demos", tags=["Demo"])
@@ -50,14 +51,14 @@ router = DemoViewSet.as_router(prefix="/demos", tags=["Demo"])
 ```python
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
+    schema = DemoResponse
 
     def get_queryset(self):
         """只返回激活的记录"""
         return self.model.filter(status=1)
 ```
 
-### 自定义操作（Action）
+### 自定义操作(Action)
 
 使用 `@action` 装饰器定义自定义操作：
 
@@ -67,7 +68,7 @@ from fastapi import Request
 
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
+    schema = DemoResponse
 
     @action(detail=True, methods=["POST"])
     async def activate(self, request: Request, pk: str):
@@ -77,8 +78,8 @@ class DemoViewSet(ModelViewSet):
             raise NotFoundError(message="记录不存在")
         instance.status = 1
         await instance.save()
-        serializer_class = self.get_serializer_class("retrieve")
-        return await serializer_class.from_tortoise_orm(instance)
+        schema = self.get_schema("retrieve")
+        return await schema.from_orm_model(instance)
 
     @action(detail=False, methods=["GET"])
     async def stats(self, request: Request):
@@ -93,6 +94,7 @@ class DemoViewSet(ModelViewSet):
 ```
 
 **路由生成**:
+
 - `POST /demos/{pk}/activate` - 激活操作
 - `GET /demos/stats` - 统计操作
 
@@ -101,7 +103,7 @@ class DemoViewSet(ModelViewSet):
 ```python
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
+    schema = DemoResponse
 
     async def perform_create_hook(self, create_data, request):
         """创建前钩子"""
@@ -111,7 +113,7 @@ class DemoViewSet(ModelViewSet):
 
     async def perform_create_after_hook(self, instance, request):
         """创建后钩子"""
-        # 可以执行额外操作，如发送通知
+        # 可以执行额外操作,如发送通知
         await send_notification(f"创建了 {instance.name}")
         return instance
 ```
@@ -136,7 +138,7 @@ router = DemoViewSet.as_router(
 
 ## 与现有 CRUD 工具的对比
 
-### 当前方式（CRUDRouter）
+### 当前方式(CRUDRouter)
 
 ```python
 from faster_app.utils.crud import CRUDRouter
@@ -161,19 +163,19 @@ router = DemoViewSet.as_router(prefix="/demos", tags=["Demo"])
 
 ### 优势对比
 
-| 特性 | CRUDRouter | ViewSet |
-|------|------------|---------|
-| 基础 CRUD | ✅ | ✅ |
-| 自定义操作 | ❌ | ✅ (@action) |
-| 钩子函数 | ✅ | ✅ |
-| 查询集自定义 | ❌ | ✅ |
-| 权限控制 | ❌ | 🔜 (阶段二) |
-| 过滤排序 | ❌ | 🔜 (阶段三) |
+| 特性         | CRUDRouter | ViewSet      |
+| ------------ | ---------- | ------------ |
+| 基础 CRUD    | ✅         | ✅           |
+| 自定义操作   | ❌         | ✅ (@action) |
+| 钩子函数     | ✅         | ✅           |
+| 查询集自定义 | ❌         | ✅           |
+| 权限控制     | ❌         | 🔜 (阶段二)  |
+| 过滤排序     | ❌         | 🔜 (阶段三)  |
 
 ## 最佳实践
 
 1. **使用 ViewSet 进行新开发**：新功能优先使用 ViewSet
-2. **保持向后兼容**：现有代码继续使用 CRUDRouter，逐步迁移
+2. **保持向后兼容**：现有代码继续使用 CRUDRouter,逐步迁移
 3. **合理使用 Action**：将相关操作组织在同一个 ViewSet 中
 4. **自定义查询集**：使用 `get_queryset()` 控制数据访问范围
 
@@ -182,6 +184,7 @@ router = DemoViewSet.as_router(prefix="/demos", tags=["Demo"])
 ### 从 CRUDRouter 迁移到 ViewSet
 
 **之前**:
+
 ```python
 demo_router = CRUDRouter(
     model=DemoModel,
@@ -193,12 +196,13 @@ demo_router = CRUDRouter(
 ```
 
 **之后**:
+
 ```python
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    create_serializer_class = DemoCreate
-    update_serializer_class = DemoUpdate
+    schema = DemoResponse
+    create_schema = DemoCreate
+    update_schema = DemoUpdate
 
 router = DemoViewSet.as_router(prefix="/demos", tags=["Demo"])
 ```
@@ -207,15 +211,15 @@ router = DemoViewSet.as_router(prefix="/demos", tags=["Demo"])
 
 ### 权限系统
 
-ViewSet 支持灵活的权限控制，包括操作级权限和对象级权限。
+ViewSet 支持灵活的权限控制,包括操作级权限和对象级权限。
 
 #### 内置权限类
 
-- `AllowAny` - 允许所有请求（默认）
+- `AllowAny` - 允许所有请求(默认)
 - `IsAuthenticated` - 需要认证
 - `IsAdminUser` - 需要管理员权限
 - `IsOwner` - 检查是否是对象所有者
-- `IsOwnerOrReadOnly` - 所有者可以所有操作，其他用户只能读取
+- `IsOwnerOrReadOnly` - 所有者可以所有操作,其他用户只能读取
 
 #### 使用权限
 
@@ -224,8 +228,8 @@ from faster_app.viewsets import ModelViewSet, IsAuthenticated, IsOwner
 
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    
+    schema = DemoResponse
+
     # 设置权限类
     permission_classes = [IsAuthenticated]
 ```
@@ -237,9 +241,9 @@ from faster_app.viewsets import ModelViewSet, IsOwnerOrReadOnly
 
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    
-    # 所有者可以所有操作，其他用户只能读取
+    schema = DemoResponse
+
+    # 所有者可以所有操作,其他用户只能读取
     permission_classes = [IsOwnerOrReadOnly]
 ```
 
@@ -249,7 +253,7 @@ ViewSet 支持多种认证方式。
 
 #### 内置认证类
 
-- `NoAuthentication` - 不进行认证（默认）
+- `NoAuthentication` - 不进行认证(默认)
 - `JWTAuthentication` - JWT 认证
 - `TokenAuthentication` - Token 认证
 - `SessionAuthentication` - Session 认证
@@ -261,8 +265,8 @@ from faster_app.viewsets import ModelViewSet, JWTAuthentication, IsAuthenticated
 
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    
+    schema = DemoResponse
+
     # 设置认证和权限
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -275,11 +279,11 @@ from faster_app.viewsets import ModelViewSet, JWTAuthentication, IsAuthenticated
 
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    
+    schema = DemoResponse
+
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         # 认证后可以访问 request.state.user
         return self.model.all()
@@ -293,10 +297,10 @@ from fastapi import Request
 
 class IsOwnerOrAdmin(BasePermission):
     """所有者或管理员"""
-    
+
     async def has_permission(self, request: Request, view) -> bool:
         return hasattr(request.state, "user") and request.state.user is not None
-    
+
     async def has_object_permission(self, request: Request, view, obj) -> bool:
         user = request.state.user
         # 检查是否是管理员
@@ -316,7 +320,7 @@ from fastapi import Request
 
 class CustomAuthentication(BaseAuthentication):
     """自定义认证"""
-    
+
     async def authenticate(self, request: Request) -> tuple[Any, str] | None:
         # 实现认证逻辑
         token = request.headers.get("X-Custom-Token")
@@ -332,13 +336,13 @@ class CustomAuthentication(BaseAuthentication):
 
 ### 过滤系统
 
-ViewSet 支持灵活的查询过滤，包括搜索、排序、字段过滤等。
+ViewSet 支持灵活的查询过滤,包括搜索、排序、字段过滤等。
 
 #### 内置过滤后端
 
-- `SearchFilter` - 搜索过滤（多字段搜索）
+- `SearchFilter` - 搜索过滤(多字段搜索)
 - `OrderingFilter` - 排序过滤
-- `FieldFilter` - 字段过滤（精确匹配、范围查询等）
+- `FieldFilter` - 字段过滤(精确匹配、范围查询等)
 - `DjangoFilterBackend` - Django Filter 风格的过滤
 
 #### 使用过滤
@@ -348,18 +352,18 @@ from faster_app.viewsets import ModelViewSet, SearchFilter, OrderingFilter, Fiel
 
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    
+    schema = DemoResponse
+
     # 配置过滤后端
     filter_backends = [SearchFilter, OrderingFilter, FieldFilter]
-    
+
     # 搜索字段配置
     search_fields = ["name", "description"]
-    
+
     # 排序字段配置
     ordering_fields = ["created_at", "updated_at", "name"]
     ordering = ["-created_at"]  # 默认排序
-    
+
     # 字段过滤配置
     filter_fields = {
         "status": "exact",  # 精确匹配
@@ -372,36 +376,39 @@ class DemoViewSet(ModelViewSet):
 ```python
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    
+    schema = DemoResponse
+
     filter_backends = [SearchFilter]
     search_fields = ["name", "description"]
 ```
 
 **使用方式**:
+
 - `GET /demos/?search=test` - 在 name 和 description 中搜索 "test"
 
 **字段前缀**:
-- `name` - 默认：包含匹配（不区分大小写）
+
+- `name` - 默认：包含匹配(不区分大小写)
 - `^name` - 精确匹配
 - `=name` - 相等匹配
-- `@name` - 全文搜索（需要数据库支持）
+- `@name` - 全文搜索(需要数据库支持)
 
 #### 排序过滤
 
 ```python
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    
+    schema = DemoResponse
+
     filter_backends = [OrderingFilter]
     ordering_fields = ["created_at", "updated_at", "name"]
     ordering = ["-created_at"]  # 默认排序
 ```
 
 **使用方式**:
+
 - `GET /demos/?ordering=created_at` - 按创建时间升序
-- `GET /demos/?ordering=-created_at` - 按创建时间倒序（- 前缀表示降序）
+- `GET /demos/?ordering=-created_at` - 按创建时间倒序(- 前缀表示降序)
 - `GET /demos/?ordering=-created_at,name` - 多字段排序
 
 #### 字段过滤
@@ -409,8 +416,8 @@ class DemoViewSet(ModelViewSet):
 ```python
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    
+    schema = DemoResponse
+
     filter_backends = [FieldFilter]
     filter_fields = {
         "status": "exact",  # 精确匹配: ?status=1
@@ -422,13 +429,14 @@ class DemoViewSet(ModelViewSet):
 ```
 
 **支持的查询类型**:
+
 - `exact` - 精确匹配
-- `icontains` - 包含匹配（不区分大小写）
+- `icontains` - 包含匹配(不区分大小写)
 - `gt` - 大于
 - `gte` - 大于等于
 - `lt` - 小于
 - `lte` - 小于等于
-- `in` - 在列表中（逗号分隔）
+- `in` - 在列表中(逗号分隔)
 - `isnull` - 是否为空
 
 #### 组合使用
@@ -436,8 +444,8 @@ class DemoViewSet(ModelViewSet):
 ```python
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    
+    schema = DemoResponse
+
     filter_backends = [SearchFilter, OrderingFilter, FieldFilter]
     search_fields = ["name"]
     ordering_fields = ["created_at", "name"]
@@ -445,6 +453,7 @@ class DemoViewSet(ModelViewSet):
 ```
 
 **使用方式**:
+
 - `GET /demos/?search=test&ordering=-created_at&status=1` - 组合使用多个过滤条件
 
 ### 自定义过滤后端
@@ -455,7 +464,7 @@ from fastapi import Request
 
 class CustomFilter(BaseFilterBackend):
     """自定义过滤后端"""
-    
+
     async def filter_queryset(self, request: Request, queryset, view):
         # 实现自定义过滤逻辑
         custom_param = request.query_params.get("custom")
@@ -468,14 +477,14 @@ class CustomFilter(BaseFilterBackend):
 
 ### 限流系统
 
-ViewSet 支持请求频率控制，防止 API 被滥用。
+ViewSet 支持请求频率控制,防止 API 被滥用。
 
 #### 内置限流类
 
-- `NoThrottle` - 不限流（默认）
+- `NoThrottle` - 不限流(默认)
 - `SimpleRateThrottle` - 简单速率限流
-- `UserRateThrottle` - 用户限流（对已认证用户）
-- `AnonRateThrottle` - 匿名用户限流（对未认证用户）
+- `UserRateThrottle` - 用户限流(对已认证用户)
+- `AnonRateThrottle` - 匿名用户限流(对未认证用户)
 - `ScopedRateThrottle` - 作用域限流
 
 #### 使用限流
@@ -485,8 +494,8 @@ from faster_app.viewsets import ModelViewSet, UserRateThrottle, AnonRateThrottle
 
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    
+    schema = DemoResponse
+
     # 配置限流类
     throttle_classes = [
         UserRateThrottle(rate="100/hour"),  # 用户：每小时 100 次
@@ -499,12 +508,14 @@ class DemoViewSet(ModelViewSet):
 速率字符串格式：`"数量/时间单位"`
 
 支持的时间单位：
+
 - `second` - 秒
 - `minute` - 分钟
 - `hour` - 小时
 - `day` - 天
 
 示例：
+
 - `"100/hour"` - 每小时 100 次
 - `"10/minute"` - 每分钟 10 次
 - `"1000/day"` - 每天 1000 次
@@ -514,8 +525,8 @@ class DemoViewSet(ModelViewSet):
 ```python
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    
+    schema = DemoResponse
+
     # 只对已认证用户限流
     throttle_classes = [UserRateThrottle(rate="100/hour")]
 ```
@@ -525,8 +536,8 @@ class DemoViewSet(ModelViewSet):
 ```python
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    
+    schema = DemoResponse
+
     # 只对未认证用户限流
     throttle_classes = [AnonRateThrottle(rate="20/hour")]
 ```
@@ -536,8 +547,8 @@ class DemoViewSet(ModelViewSet):
 ```python
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    
+    schema = DemoResponse
+
     # 同时配置用户和匿名用户限流
     throttle_classes = [
         UserRateThrottle(rate="100/hour"),
@@ -550,8 +561,8 @@ class DemoViewSet(ModelViewSet):
 ```python
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    
+    schema = DemoResponse
+
     # 使用作用域限流
     throttle_classes = [ScopedRateThrottle()]
     throttle_scope = "demo"  # 限流作用域
@@ -565,16 +576,16 @@ from fastapi import Request
 
 class CustomThrottle(BaseThrottle):
     """自定义限流"""
-    
+
     async def allow_request(self, request: Request, view) -> bool:
         # 实现自定义限流逻辑
-        # 返回 True 表示允许请求，False 表示需要限流
+        # 返回 True 表示允许请求,False 表示需要限流
         return True
 ```
 
 ### 缓存系统
 
-ViewSet 支持响应缓存，提高 API 性能。
+ViewSet 支持响应缓存,提高 API 性能。
 
 #### 使用缓存装饰器
 
@@ -583,8 +594,8 @@ from faster_app.viewsets import ModelViewSet, cache_response
 
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    serializer_class = DemoResponse
-    
+    schema = DemoResponse
+
     @cache_response(timeout=600)  # 缓存 10 分钟
     async def list(self, request: Request, ...):
         # 响应会被缓存
@@ -602,7 +613,7 @@ def custom_cache_key(request: Request) -> str:
 
 class DemoViewSet(ModelViewSet):
     model = DemoModel
-    
+
     @cache_response(timeout=600, key_func=custom_cache_key)
     async def list(self, request: Request, ...):
         pass
@@ -636,25 +647,25 @@ from faster_app.viewsets import (
 
 class CompleteDemoViewSet(ModelViewSet):
     """完整的 ViewSet 示例"""
-    
+
     model = DemoModel
-    serializer_class = DemoResponse
-    
+    schema = DemoResponse
+
     # 认证和权限
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    
+
     # 过滤和排序
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["name"]
     ordering_fields = ["created_at", "name"]
-    
+
     # 限流
     throttle_classes = [
         UserRateThrottle(rate="100/hour"),
         AnonRateThrottle(rate="20/hour"),
     ]
-    
+
     @cache_response(timeout=300)
     async def list(self, request: Request, ...):
         return await super().list(request, ...)
@@ -672,4 +683,4 @@ ViewSet 提供了完整的 RESTful API 构建能力：
 
 ## 下一步
 
-ViewSet 功能已经完整实现，可以开始在实际项目中使用。
+ViewSet 功能已经完整实现,可以开始在实际项目中使用。
