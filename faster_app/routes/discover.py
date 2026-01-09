@@ -109,7 +109,7 @@ class RoutesDiscover(BaseDiscover):
             except RouteConflictError as e:
                 logger.error(str(e))
                 # 在开发模式下允许继续运行, 但记录错误
-                if configs.DEBUG:
+                if configs.debug:
                     logger.warning("开发模式下允许路由冲突, 应用将继续启动")
                 else:
                     # 生产模式下抛出异常

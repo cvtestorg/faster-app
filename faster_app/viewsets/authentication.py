@@ -93,7 +93,7 @@ class JWTAuthentication(BaseAuthentication):
                 return None
 
             # 验证 token
-            secret_key = self.secret_key or getattr(configs, "SECRET_KEY", "test-secret-key")
+            secret_key = self.secret_key or configs.jwt.secret_key
 
             try:
                 payload = jwt.decode(token, secret_key, algorithms=[self.algorithm])
