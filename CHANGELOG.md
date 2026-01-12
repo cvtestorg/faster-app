@@ -336,10 +336,73 @@ raise NotFoundError("用户不存在", error_detail="详细信息")
 
 ---
 
+## [0.1.5] - 2026-01-12
+
+### ✨ 新增功能
+
+**Agent Skills 系统**
+
+- 新增 `faster agent` 命令行工具，支持 AI Agent 技能管理
+- 提供 `faster-app-cn` 技能包，包含完整的中文文档和示例
+- 支持技能安装、列表查看和删除功能
+- 集成 OpenSkills 协议，与 AI 助手无缝协作
+
+**技能包内容**
+
+- 完整的配置指南（基础配置、中间件、日志、生产环境）
+- 模型系统文档（基础模型、字段、关系、查询、最佳实践）
+- ViewSet 完整指南（基础、Mixins、Actions、认证、权限、过滤、搜索、排序、分页、限流、缓存、高级模式）
+- 快速参考手册（Cheatsheet）
+- 常见问题解答（FAQ）
+- 迁移指南（Migration Guide）
+- 故障排查指南（Troubleshooting）
+
+### 🔧 优化改进
+
+**打包配置**
+
+- 修复 PyPI 打包配置，确保 `skills` 目录正确包含在发布包中
+- 更新 `pyproject.toml` 的 `package-data` 配置，添加 `skills/**/*`
+
+**Bug 修复**
+
+- 修复 `faster agent install` 命令中 `copytree` 目标路径错误
+- 使用 `os.path.join` 构建路径，提高跨平台兼容性
+
+### 📚 文档更新
+
+- 新增 `AGENTS.md` - Agent Skills 使用指南
+- 新增 `faster_app/skills/README.md` - 技能系统说明
+- 更新项目文档结构说明
+
+### 🎯 使用方式
+
+```bash
+# 查看可用技能
+faster agent list
+
+# 安装技能
+faster agent install faster-app-cn
+
+# 在 AI 助手中使用
+openskills read faster-app-cn
+```
+
+### 💡 为什么需要 Agent Skills？
+
+- **AI 友好**: 让 AI 助手快速理解框架特性和最佳实践
+- **快速上手**: 通过技能包获取完整的使用指南和示例
+- **持续更新**: 技能包随框架更新，始终保持最新
+- **开发效率**: AI 助手可以基于技能包提供更准确的代码建议
+
+---
+
 ## [Unreleased]
 
 ### 计划中的功能
 
+- 更多 Agent Skills 技能包
+- 英文版技能包
 - 更多性能优化
 - 扩展的文档和示例
 - 社区反馈的改进

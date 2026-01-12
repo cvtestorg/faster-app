@@ -21,7 +21,7 @@ Email: peizhenfei@hotmail.com
 License: MIT
 """
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 __author__ = "peizhenfei"
 __email__ = "peizhenfei@hotmail.com"
 
