@@ -59,9 +59,7 @@ async def readiness_check(request: Request):
         apps_status.append(status)
 
     # 检查是否所有应用都已就绪
-    all_ready = all(
-        app["state"] == "ready" for app in apps_status
-    )
+    all_ready = all(app["state"] == "ready" for app in apps_status)
 
     if all_ready:
         return {

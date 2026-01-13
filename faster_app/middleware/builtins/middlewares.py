@@ -73,9 +73,7 @@ def _log_middleware_info():
         # 生产环境提示
         cors_cfg = configs.middleware.cors
         if "*" in cors_cfg.allow_origins:
-            logger.warning(
-                "⚠️  [安全提示] 生产环境 CORS 允许所有域名访问，建议指定明确的域名列表"
-            )
+            logger.warning("⚠️  [安全提示] 生产环境 CORS 允许所有域名访问，建议指定明确的域名列表")
 
         trusted_cfg = configs.middleware.trusted_host
         if not trusted_cfg.enabled:
@@ -84,9 +82,7 @@ def _log_middleware_info():
                 "（设置 TRUSTED_HOST_ENABLED=true）"
             )
         elif "*" in trusted_cfg.hosts:
-            logger.warning(
-                "⚠️  [安全提示] TrustedHost 允许所有主机名，建议指定明确的主机名列表"
-            )
+            logger.warning("⚠️  [安全提示] TrustedHost 允许所有主机名，建议指定明确的主机名列表")
 
 
 # 记录配置信息

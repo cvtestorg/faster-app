@@ -2,7 +2,6 @@
 自动发现 apps 目录下的 commands 模块和内置命令
 """
 
-
 from faster_app.commands.base import BaseCommand
 from faster_app.utils import BASE_DIR
 from faster_app.utils.discover import BaseDiscover

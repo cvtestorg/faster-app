@@ -43,9 +43,7 @@ class ServerOperations(BaseCommand):
             spec.loader.exec_module(user_main)
 
             if hasattr(user_main, "app"):
-                console.print(
-                    "[bold green]⚙️  使用用户自定义的 FastAPI 应用实例[/bold green]"
-                )
+                console.print("[bold green]⚙️  使用用户自定义的 FastAPI 应用实例[/bold green]")
                 app_target = "main:app" if configs.debug else user_main.app
                 self._run_server(app_target)
                 return True

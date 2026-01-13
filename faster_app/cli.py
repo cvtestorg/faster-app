@@ -33,9 +33,7 @@ def main() -> None:
     # 设置 PYTHONPATH 环境变量, 确保子进程也能找到项目模块
     pythonpath = os.environ.get("PYTHONPATH", "")
     if current_dir not in pythonpath:
-        os.environ["PYTHONPATH"] = (
-            current_dir + ":" + pythonpath if pythonpath else current_dir
-        )
+        os.environ["PYTHONPATH"] = current_dir + ":" + pythonpath if pythonpath else current_dir
 
     # 禁用 Fire 的分页器, 避免在 AI Agent 中挂起
     # 设置 PAGER=cat 使输出直接显示而不需要交互

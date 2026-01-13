@@ -65,9 +65,7 @@ class BaseCommand:
         # 设置 PYTHONPATH 环境变量, 确保子进程也能找到项目模块
         pythonpath = os.environ.get("PYTHONPATH", "")
         if current_dir not in pythonpath:
-            os.environ["PYTHONPATH"] = (
-                current_dir + ":" + pythonpath if pythonpath else current_dir
-            )
+            os.environ["PYTHONPATH"] = current_dir + ":" + pythonpath if pythonpath else current_dir
 
     @classmethod
     def _get_command_name(
@@ -101,16 +99,12 @@ class BaseCommand:
 
         # 获取前缀列表, 合并默认前缀和 Meta 配置的前缀
         if prefixes is None:
-            meta_prefixes = (
-                getattr(cls.Meta, "PREFIXES", []) if hasattr(cls, "Meta") else []
-            )
+            meta_prefixes = getattr(cls.Meta, "PREFIXES", []) if hasattr(cls, "Meta") else []
             prefixes = cls._DEFAULT_PREFIXES + meta_prefixes
 
         # 获取后缀列表, 合并默认后缀和 Meta 配置的后缀
         if suffixes is None:
-            meta_suffixes = (
-                getattr(cls.Meta, "SUFFIXES", []) if hasattr(cls, "Meta") else []
-            )
+            meta_suffixes = getattr(cls.Meta, "SUFFIXES", []) if hasattr(cls, "Meta") else []
             suffixes = cls._DEFAULT_SUFFIXES + meta_suffixes
 
         # 去除前缀
