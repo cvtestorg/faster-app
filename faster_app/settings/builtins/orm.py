@@ -11,8 +11,7 @@ for app_name, model_paths in models_discover.items():
     all_model_paths.extend(model_paths)
 
 # 构建 Tortoise ORM 配置
-# 将所有用户模型放在 "models" app 下, 这样 aerich 可以统一管理所有模型的迁移
-# aerich.models 也在 "models" app 中, 用于存储迁移历史
+# 将所有模型放在 "models" app 下，这样 aerich 可以统一追踪所有模型
 apps_config = {
     "models": {
         "models": ["aerich.models"] + all_model_paths,
