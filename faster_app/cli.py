@@ -37,6 +37,11 @@ def main() -> None:
             current_dir + ":" + pythonpath if pythonpath else current_dir
         )
 
+    # 禁用 Fire 的分页器, 避免在 AI Agent 中挂起
+    # 设置 PAGER=cat 使输出直接显示而不需要交互
+    if "PAGER" not in os.environ:
+        os.environ["PAGER"] = "cat"
+
     # 收集命令
     commands: dict[str, Any] = CommandDiscover().collect()
     fire.Fire(commands)
