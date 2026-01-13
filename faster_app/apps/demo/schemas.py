@@ -14,9 +14,7 @@ class DemoCreate(BaseModel):
         description="Demo 名称",
         examples=["我的第一个 Demo"],
     )
-    status: int | None = Field(
-        default=1, description="状态:1-激活, 0-未激活", examples=[1]
-    )
+    status: int | None = Field(default=1, description="状态:1-激活, 0-未激活", examples=[1])
 
     @field_validator("name")
     @classmethod
@@ -30,9 +28,7 @@ class DemoCreate(BaseModel):
 class DemoUpdate(BaseModel):
     """更新 Demo 的请求 Schema - 所有字段可选"""
 
-    name: str | None = Field(
-        None, min_length=1, max_length=255, description="Demo 名称"
-    )
+    name: str | None = Field(None, min_length=1, max_length=255, description="Demo 名称")
     status: int | None = Field(None, description="状态:1-激活, 0-未激活")
 
     @field_validator("name")
@@ -89,9 +85,7 @@ class DemoResponse(BaseModel):
 class BackgroundTaskRequest(BaseModel):
     """后台任务请求"""
 
-    email: str = Field(
-        ..., description="接收通知的邮箱地址", examples=["user@example.com"]
-    )
+    email: str = Field(..., description="接收通知的邮箱地址", examples=["user@example.com"])
     message: str = Field(..., description="通知消息内容", examples=["您的任务已完成"])
     task_id: str = Field(default="task-001", description="任务ID")
 

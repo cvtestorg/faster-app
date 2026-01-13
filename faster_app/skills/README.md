@@ -20,35 +20,59 @@
 **文档组织：**
 - **主文档（1个）**：SKILL.md - 快速索引和导航
 - **ViewSet 参考（11个）**：基础、Mixins、操作、认证、权限、过滤、搜索、分页、限流、缓存、高级模式
-- **Model 参考（9个）**：基础模型、字段、关系（FK/M2M/O2O）、查询、自定义方法、常见模式
-- **Config 参考（7个）**：基础、中间件、数据库、日志、生产环境、多环境、自定义
+- **Model 参考（5个）**：基础模型、字段、关系、查询、常见模式
+- **Config 参考（3个）**：基础和中间件、日志和生产环境、高级配置
 - **辅助文档（5个）**：FAQ、CHEATSHEET、EXAMPLES、TROUBLESHOOTING、MIGRATION
 
-**总计：** 33 个文件，3500+ 行高质量中文文档
+**总计：** 25 个文件，4600+ 行高质量中文文档
 
 ## 使用 Skill
+
+### 典型使用方法（推荐）
+
+使用 `faster agent skill` 命令快速安装，然后通过 `openskills sync` 加载：
+
+1. **安装 Skill 到 Claude 技能目录：**
+   ```bash
+   faster agent skill
+   ```
+   
+   此命令会将技能文件复制到 `~/.claude/skills/faster-app-cn/` 目录。
+
+2. **同步技能到 OpenSkills：**
+   ```bash
+   openskills sync
+   ```
+   
+   或在 Claude 中执行：
+   ```python
+   bash('openskills sync')
+   ```
+
+3. **使用技能：**
+   技能加载后，在处理 FastAPI 和 Faster APP 项目时会自动可用。
+
+**可选参数：**
+- `--system=false`: 安装到项目本地的 `.claude/skills/` 目录（默认为 `~/.claude/skills/`）
+- `--lan=cn`: 指定语言版本（默认为中文版 `cn`）
 
 ### 作为项目成员
 
 Skill 已在 `AGENTS.md` 中注册，AI 代理会自动使用。
 
-### 作为独立 Skill
+### 手动安装（替代方法）
 
-要在其他项目中使用：
+如果无法使用 `faster agent skill` 命令，可以手动安装：
 
-1. **安装 skill：**
+1. **复制 skill 目录：**
    ```bash
-   cp faster-app-cn.skill ~/.claude/skills/
+   cp -r faster_app/skills/faster-app-cn ~/.claude/skills/
    ```
 
-2. **提取 skill：**
+2. **同步技能：**
    ```bash
-   cd ~/.claude/skills
-   unzip faster-app-cn.skill -d faster-app-cn/
+   openskills sync
    ```
-
-3. **使用：**
-   在处理 FastAPI 和 Faster APP 项目时自动可用。
 
 ## Skill 优势
 
@@ -88,9 +112,9 @@ Skill 已在 `AGENTS.md` 中注册，AI 代理会自动使用。
 3. 最后查具体主题文档深入了解
 
 ### 深入学习路径
-1. **ViewSet 路径**：01-basics → 02-mixins → 03-actions → ... → 11-advanced
-2. **Model 路径**：01-base-models → 02-fields → 03-foreignkey → ... → 09-patterns
-3. **Config 路径**：01-basics → 02-middleware → ... → 07-custom-config
+1. **ViewSet 路径**：01-basics → 02-mixins → 03-actions → ... → 11-advanced-patterns
+2. **Model 路径**：01-base-models → 02-fields → 03-relationships → 04-queries → 05-patterns
+3. **Config 路径**：01-basics-and-middleware → 02-logging-and-production → 03-advanced
 
 ## Skill 结构
 
@@ -102,14 +126,14 @@ faster-app-cn/
     │   ├── 01-basics.md
     │   ├── 02-mixins.md
     │   └── ...
-    ├── model/          (9 个主题)
+    ├── model/          (5 个主题)
     │   ├── 01-base-models.md
     │   ├── 02-fields.md
     │   └── ...
-    ├── config/         (7 个主题)
-    │   ├── 01-basics.md
-    │   ├── 02-middleware.md
-    │   └── ...
+    ├── config/         (3 个主题)
+    │   ├── 01-basics-and-middleware.md
+    │   ├── 02-logging-and-production.md
+    │   └── 03-advanced.md
     ├── FAQ.md          (常见问题)
     ├── CHEATSHEET.md   (速查表)
     ├── EXAMPLES.md     (实战示例)

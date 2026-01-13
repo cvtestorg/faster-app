@@ -12,7 +12,9 @@ from fastapi import FastAPI
 __all__ = ["combine_lifespans"]
 
 
-def combine_lifespans(*lifespans: Callable[[FastAPI], AsyncGenerator[None, None]]) -> Callable[[FastAPI], AsyncGenerator[None, None]]:
+def combine_lifespans(
+    *lifespans: Callable[[FastAPI], AsyncGenerator[None, None]],
+) -> Callable[[FastAPI], AsyncGenerator[None, None]]:
     """组合多个 lifespan 上下文管理器
 
     将多个独立的 lifespan 函数组合成一个, 按顺序执行启动和关闭逻辑。
