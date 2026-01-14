@@ -7,7 +7,7 @@ models_discover = ModelDiscover().discover()
 
 # 收集所有发现的模型路径
 all_model_paths = []
-for app_name, model_paths in models_discover.items():
+for _app_name, model_paths in models_discover.items():
     all_model_paths.extend(model_paths)
 
 # 构建 Tortoise ORM 配置
