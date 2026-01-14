@@ -9,7 +9,6 @@ class DemoModel(UUIDModel, DateTimeModel, StatusModel):
     name = fields.CharField(max_length=255)
 
     class Meta:
-        app = "demo"
         table = "demo"
         table_description = "demo model"
 
