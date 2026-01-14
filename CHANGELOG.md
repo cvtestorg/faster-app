@@ -397,6 +397,49 @@ openskills read faster-app-cn
 
 ---
 
+## [0.1.6] - 2026-01-14
+
+### 🐛 Bug 修复
+
+**数据库迁移支持**
+
+- **修复 TORTOISE_ORM 配置问题**：修复 aerich migrations 无法正常工作的问题
+  - 优化 `TORTOISE_ORM` 配置结构，确保 aerich 能够正确识别模型
+  - 修复模型发现路径问题，使用绝对路径提高可靠性
+  - 添加 `BASE_DIR` 导入，确保路径解析正确
+
+**命令行工具修复**
+
+- **修复 Python Fire pager 挂起问题**：解决 `faster agent` 命令在某些终端环境下挂起的问题
+  - 禁用 Python Fire 的自动分页功能，避免交互式终端问题
+  - 改进命令行输出体验
+
+### 🔧 优化改进
+
+**代码质量**
+
+- 修复 ruff linting 错误（重命名未使用的循环变量）
+- 应用代码格式化，统一代码风格
+- 修复 UP035 导入问题：从 `collections.abc` 导入 `Callable` 替代 `typing`
+- 优化导入语句，提高代码可维护性
+
+**依赖更新**
+
+- 添加 `mdurl>=0.1.2` 到项目依赖，确保兼容性
+
+**文档改进**
+
+- 更新 Agent skill 命令使用说明
+- 添加典型使用场景示例
+- 改进技能文档结构
+
+### 📚 文档更新
+
+- 更新 `faster_app/skills/README.md` - 改进技能系统使用说明
+- 添加 Agent skill 命令的典型使用示例
+
+---
+
 ## [Unreleased]
 
 ### 计划中的功能
