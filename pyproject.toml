@@ -40,7 +40,7 @@ include = ["faster_app*"]
 exclude = ["tests*", "docs*", "__pycache__*", "*.pyc", "*.pyo"]
 
 [tool.setuptools.package-data]
-"faster_app" = ["statics/*", "runtime/*", "skills/**/*", "public/*"]
+"faster_app" = ["statics/*", "runtime/*", "skills/**/*", "public/*", "public/.*", "public/**/.*", "public/.env.example"]
 
 [project.scripts]
 faster = "faster_app.cli:main"
