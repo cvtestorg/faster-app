@@ -215,6 +215,18 @@ class DefaultSettings(BaseSettings):
         default=True, description="是否启用路由冲突检测", validation_alias="VALIDATE_ROUTES"
     )
 
+    # 数据库配置相关字段（用于从环境变量读取）
+    # 注意：由于 pydantic_settings 的限制，嵌套 BaseModel 中的 validation_alias 无法从环境变量读取
+    # 因此需要在顶层添加字段读取环境变量，然后通过 model_validator 传递给嵌套配置
+    db_url: str = Field(
+        default="sqlite://db.sqlite", description="数据库连接 URL", validation_alias="DB_URL"
+    )
+    enable_database_lifespan: bool = Field(
+        default=False,
+        description="是否启用数据库生命周期",
+        validation_alias="ENABLE_DATABASE_LIFESPAN",
+    )
+
     # 嵌套配置
     server: ServerConfig = Field(default_factory=ServerConfig, description="服务器配置")
     jwt: JWTConfig = Field(default_factory=JWTConfig, description="JWT 配置")
@@ -227,6 +239,10 @@ class DefaultSettings(BaseSettings):
     @model_validator(mode="after")
     def validate_production_settings(self):
         """生产环境配置验证"""
+        # 从顶层字段设置嵌套配置（修复 pydantic_settings 嵌套配置无法读取环境变量的问题）
+        self.database.url = self.db_url
+        self.lifespan.enable_database = self.enable_database_lifespan
+
         if not self.debug:
             # 生产环境检查
             if self.jwt.secret_key == "your-secret-key-here-change-in-production":
